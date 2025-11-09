@@ -8,7 +8,6 @@ class JoinFiles:
         self.files = files
 
     def join(self):
-        print(f"{self.files}")
         combined_df = None
 
         for file in self.files:
