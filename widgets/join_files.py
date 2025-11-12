@@ -31,14 +31,14 @@ class JoinFiles:
                 content=StringIO(safe_decode(file.getvalue()))
                 #csvファイルを縦に結合していく
                 df =pd.read_csv(content)
-                combined_df =dd.from_pandas(df,npartitions = 1)
+                df =dd.from_pandas(df,npartitions = 1)
                 
             else:
-                df = dd.read_csv(file)
+                df = dd.read_csv(file).compute()
             
             if combined_df is None:
                 combined_df=df
             else:
-                combined_df=dd.concat([combined_df,df],axis=0,interleave_partitions=True)
-        print(combined_df.head(6))
+                combined_df=dd.concat([combined_df,df]).compute()
+
         return combined_df
