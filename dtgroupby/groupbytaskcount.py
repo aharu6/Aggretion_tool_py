@@ -16,6 +16,9 @@ class GroupByTaskCount:
         #date_range[1]:end date
         if date_range and len(date_range) ==2:
             start_date = pd.to_datetime(date_range[0])
+            print("start_date:",start_date)
+            print("end_date:",date_range[1])
+            
             end_date = pd.to_datetime(date_range[1])
             df = df[(df['date'] >= start_date)&(df['date']<= end_date)]
         
