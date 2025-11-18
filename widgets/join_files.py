@@ -3,6 +3,7 @@ import pandas as pd
 from io import StringIO
 import chardet
 import re
+from concurrent.futures import ThreadPoolExecutor,as_completed
 class JoinFiles:
     def __init__(self, files):
         self.files = files
@@ -26,33 +27,44 @@ class JoinFiles:
         
         combined_df = None
 
-        dataframes=[]
-        for file in self.files:
-            #ファイル名の日付データを取得する'2025-4-1三浦 太一.csv' '2025-4-1小林 京助.csv'
-            #数字の部分でファイル名を切れば日付になる
-            date_part=re.search(r'(\d{4}-\d{1,2}-\d{1,2})',file.name)
+        def process_single_file(file):
+            date_part = re.search(r'(\d{4}-\d{1,2}-\d{1,2})', file.name)
             if date_part is None:
                 print(f"ファイル名から日付を取得できませんでした: {file.name}")
-                break
+                return None
+            try:
+                if hasattr(file,"read"):
+                    content = StringIO(safe_decode(file.getvalue()))
+                    df = pd.read_csv(content)
+                else:
+                    df = pd.read_csv(file)
 
-            if hasattr(file,"read"):
-                content=StringIO(safe_decode(file.getvalue()))
-                #csvファイルを縦に結合していく
-                df =pd.read_csv(content)
-                df =dd.from_pandas(df,npartitions = 1)
-                df["date"]=date_part.group(0)
-                
-                
-            else:
-                df = dd.read_csv(file)
-                #日付列を加える
-                df["date"]=date_part.group(0)
-            df["date"] = dd.to_datetime(df["date"], format="%Y-%m-%d")
-            dataframes.append(df)
+                df["date"] = pd.to_datetime(date_part.group(0), format="%Y-%m-%d")
+                return df
+            except Exception as e:
+                print(f"ファイルの処理中にエラーが発生しました: {file.name}, エラー: {e}")
+                return None
+
+        dataframes=[] 
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            future_to_file = {executor.submit(process_single_file,file):file for file in self.files}
+
+            for future in as_completed(future_to_file):
+                df = future.result()
+                if df is not None:
+                    dataframes.append(df)
+
                 
         if dataframes:
-            combined_df = dd.concat(dataframes,ignore_index=True)
-            return combined_df.compute()
+            total_rows = sum(len(df) for df in dataframes)
+
+            if total_rows < 100000:
+                combined_df = pd.concat(dataframes,ignore_index=True)
+            else:
+                dask_dfs = [dd.from_pandas(df,npartitions=1) for df in dataframes]
+                combined_df = dd.concat(dask_dfs,ignore_index=True).compute()
+                
+            return combined_df
         
         else:
             return None
