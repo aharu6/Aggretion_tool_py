@@ -15,12 +15,6 @@ def View():
         combined_data = JoinFiles(uploadfiles).join()
     #TODO ファイル読み込み中のプログレスバーを表示、中に読み込んだデータを元に集計項目を作成する旨を記載
     if combined_data is not None:
-        st.markdown("結合結果のプレビュー")
-        st.markdown("先頭10行を表示")
-        if filtered_data is not None:
-            st.dataframe(filtered_data.head(n=10))
-        else:
-            st.dataframe(combined_data.head(n=10))    
 
         locate_select =st.multiselect(label="病棟の絞り込み",options=combined_data['locate'].unique())
         name_select = st.multiselect(label="個人名の選択",options=combined_data["phName"].unique())
@@ -32,6 +26,15 @@ def View():
         #名前や期間で絞り込みあれば反映する
         filtered_data=GroupByTaskCount(combined_data).group_by_task_count(
             date_range=date_range,locate_select=locate_select,name_select=name_select)
+
+        st.markdown("結合結果のプレビュー")
+        st.markdown("先頭10行を表示")
+
+
+        if filtered_data is not None:
+            st.dataframe(filtered_data.head(10))
+        else:
+            st.dataframe(combined_data.head(10))    
         #barchart
         st.markdown("barchart")
             
