@@ -6,6 +6,8 @@ class GroupByTaskCount:
 
     def group_by_task_count(self, locate_select=None, name_select=None, date_range=None):
         df = self.dataframe
+
+        conditions = []
         if locate_select:
             df = df[df['locate'].isin(locate_select)]
         
@@ -15,10 +17,15 @@ class GroupByTaskCount:
         #date_range[0]:start date
         #date_range[1]:end date
         if date_range and len(date_range) ==2:
-            start_date = pd.to_datetime(date_range[0],format="%Y-%m-%d")
+            start_date = pd.Timestamp(date_range[0])
+            end_date = pd.Timestamp(date_range[1])
+            conditions.append((df['date'] >= start_date) & (df['date'] <= end_date))
 
-            end_date = pd.to_datetime(date_range[1],format="%Y-%m-%d")
-            df = df[(df['date'] >= start_date)&(df['date']<= end_date)]
-        
+        if conditions:
+            combined_condition = conditions[0]
+            for condition in conditions[1:]:
+                combined_condition &= condition
+            df = df[combined_condition]
+                    
         return df
             
