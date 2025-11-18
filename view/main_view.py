@@ -35,11 +35,7 @@ def View():
             st.dataframe(filtered_data.head(10))
         else:
             st.dataframe(combined_data.head(10))    
-        #barchart
-        st.markdown("barchart")
-            
-        #plotly_chart
-        st.markdown("plotly")
+        
 
         st.markdown("病棟ごとの集計")
         if st.checkbox("病棟の選択"):
@@ -49,5 +45,8 @@ def View():
         if st.checkbox("個人ごとの集計を表示"):
             # TODO: 個人ごとの集計処理を実装 読み込んだデータから名前データを抽出してチェックボックスを生成する
             pass
-        #TODO グラフの表示
-        #主計に使用したデータフレームの表示
+        #barchart
+        st.markdown("barchart")
+        
+        #plotly_chart
+        st.markdown("plotly")
