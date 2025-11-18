@@ -32,9 +32,9 @@ def View():
 
 
         if filtered_data is not None:
-            st.dataframe(filtered_data.head(n=10))
+            st.dataframe(filtered_data.head(10))
         else:
-            st.dataframe(combined_data.head(n=10))    
+            st.dataframe(combined_data.head(10))    
         #barchart
         st.markdown("barchart")
             

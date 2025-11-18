@@ -47,12 +47,12 @@ class JoinFiles:
                 df = dd.read_csv(file)
                 #日付列を加える
                 df["date"]=date_part.group(0)
-            df["date"] = dd.to_datetime(df["date"],format="%Y-%m-%d")
+            df["date"] = dd.to_datetime(df["date"], format="%Y-%m-%d")
             dataframes.append(df)
                 
-            if dataframes:
-                combined_df = dd.concat(dataframes,ignore_index=True)
-                return combined_df.compute()
-            
-            else:
-                return None
+        if dataframes:
+            combined_df = dd.concat(dataframes,ignore_index=True)
+            return combined_df.compute()
+        
+        else:
+            return None
