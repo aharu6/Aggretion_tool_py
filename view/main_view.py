@@ -53,11 +53,11 @@ def View():
                 date_range=date_range,locate_select=None,name_select=None)
             #絞り込みは日付のみ
             st.markdown("結合結果のプレビュー")
-            st.markdown("先頭10行を表示")
+        
             if filtered_data is not None:
-                st.dataframe(filtered_data.head(10))
+                st.dataframe(filtered_data)
             else:
-                st.dataframe(combined_data.head(10))    
+                st.dataframe(combined_data)    
             
             #barchart
             st.markdown("barchart")
@@ -68,7 +68,8 @@ def View():
 
             st.markdown("counts per task /counts の合計")
             counts_per_task_chart(filtered_data,combined_data)
-            
-            st.markdown("time per locate")
+
+            st.markdown("time per locate")#TODO:locateごとに作成する
 
             st.markdown("time per task")#TODO:taskごとに作成する
+            
