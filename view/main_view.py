@@ -2,14 +2,18 @@ import streamlit as st
 from widgets.folder_selector import FolderSelector
 from widgets.join_files import JoinFiles
 from dtgroupby.groupbytaskcount import GroupByTaskCount
-from resizeDataframe.drawChart import time_per_task_chart,counts_per_task_chart
+from resizeDataframe.drawChart import (
+    time_per_task_chart,
+    counts_per_task_chart,
+    time_per_locate_chart,
+    Medication_Guidance_Record_Creation
+)
 def View():
-    st.title("Hello from aggretion-tool-py!")
+    st.title("日誌集計ツール")
     st.markdown("ようこそ。このアプリケーションは複数のCSVファイルを結合し、集計を行うツールです。")
     st.markdown("最初にcsvファイルを含むフォルダをアップロードしてください")
     combined_data=None
     #フォルダを読み込む
-    st.markdown("フォルダ選択")
     uploadfiles =st.file_uploader("フォルダを選択してください",accept_multiple_files='directory')
     
     if uploadfiles:
@@ -53,11 +57,10 @@ def View():
                 date_range=date_range,locate_select=None,name_select=None)
             #絞り込みは日付のみ
             st.markdown("結合結果のプレビュー")
-        
             if filtered_data is not None:
-                st.dataframe(filtered_data)
+                st.dataframe(filtered_data.head(10))
             else:
-                st.dataframe(combined_data)    
+                st.dataframe(combined_data.head(10))    
             
             #barchart
             st.markdown("barchart")
@@ -69,7 +72,10 @@ def View():
             st.markdown("counts per task /counts の合計")
             counts_per_task_chart(filtered_data,combined_data)
 
-            st.markdown("time per locate")#TODO:locateごとに作成する
+            st.markdown("time per locate/locateごとに記録された時間の合計")#TODO:locateごとに作成する
+            time_per_locate_chart(filtered_data,combined_data)
 
             st.markdown("time per task")#TODO:taskごとに作成する
+            st.markdown("服薬指導+記録作成")
+            Medication_Guidance_Record_Creation(filtered_data,combined_data)
             
