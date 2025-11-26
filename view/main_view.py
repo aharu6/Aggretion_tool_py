@@ -48,7 +48,7 @@ def View():
             #名前や期間で絞り込みあれば反映する
             filtered_data=GroupByTaskCount(combined_data).group_by_task_count(
                 date_range=date_range,locate_select=locate_select,name_select=name_select)
-
+            st.subheader("")
 
         elif slider == "なし":
             st.markdown("期間選択")
@@ -63,19 +63,22 @@ def View():
                 st.dataframe(combined_data.head(10))    
             
             #barchart
+            st.subheader("記録された時間")
             st.markdown("barchart")
-            st.markdown("time per task 記録された時間")
             time_per_task_chart(filtered_data,combined_data)
             #plotly_chart
             st.markdown("plotly")
-
-            st.markdown("counts per task /counts の合計")
+            
+            st.subheader("件数の合計")
             counts_per_task_chart(filtered_data,combined_data)
 
-            st.markdown("time per locate/locateごとに記録された時間の合計")#TODO:locateごとに作成する
+            st.subheader("病棟別の業務割合表示")
+            st.subheader("病棟ごとに記録された時間の合計")#TODO:locateごとに作成する
             time_per_locate_chart(filtered_data,combined_data)
 
-            st.markdown("time per task")#TODO:taskごとに作成する
+            st.subheader("薬剤師ごとの業務割合比較")
+            st.subheader("1件あたりに要した時間")#TODO:taskごとに作成する
             st.markdown("服薬指導+記録作成")
             Medication_Guidance_Record_Creation(filtered_data,combined_data)
+
             
