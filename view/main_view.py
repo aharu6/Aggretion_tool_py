@@ -107,6 +107,9 @@ def View():
             Calculate_other_consultation(filtered_data,combined_data)
             st.markdown("医師からの相談")
             Calculate_doctor_consultation(filtered_data,combined_data)
+            st.markdown("看護師からの相談")
+            Calculate_nurse_consultation(filtered_data,combined_data)
+            
             st.markdown("服薬指導+記録作成")
             Medication_Guidance_Record_Creation(filtered_data,combined_data)
 

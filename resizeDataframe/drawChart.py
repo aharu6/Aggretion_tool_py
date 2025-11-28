@@ -105,4 +105,14 @@ def Calculate_other_consultation(filtered_data,combined_data):
     st.dataframe(other_consultation_data)
 
 def Calculate_doctor_consultation(filtered_data,combined_data):
-    pass
+    data = _get_data(filtered_data,combined_data)
+    doctor_consultation_data = _filter_and_aggregate_task(data,'医師からの相談')
+    doctor_consultation_data["task_per_time"] = doctor_consultation_data['time'] / doctor_consultation_data['count']
+    st.dataframe(doctor_consultation_data)
+
+def Calculate_nurse_consultation(filtered_data,combined_data):
+    data = _get_data(filtered_data,combined_data)
+    nurse_consultation_data = _filter_and_aggregate_task(data,'看護師からの相談')
+    nurse_consultation_data["task_per_time"] = nurse_consultation_data['time'] / nurse_consultation_data['count']
+    st.dataframe(nurse_consultation_data)
+    
