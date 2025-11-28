@@ -12,7 +12,7 @@ def _filter_and_aggregate_task(data,task_name):
     task_data = data[['phName','count','task']]
     task_data = data[data['task'] ==task_name]
     task_data['time'] = 15
-    task_data = task_data.groupby('phName',as_index =False).sum()
+    task_data = task_data.groupby('phName',as_index =False)[['time','count']].sum()
     return task_data
     
 
@@ -57,126 +57,52 @@ def time_per_locate_chart(filtered_data,combined_data):
 def Medication_Guidance_Record_Creation(filtered_data,combined_data):
     data = _get_data(filtered_data,combined_data)
     med_data = _filter_and_aggregate_task(data,'服薬指導＋指導記録作成')
-    st.bar_chart(med_data,y ='count',x = 'phName',x_label='薬剤師名',y_label='1件あたりの時間（分）')
+    med_data["task_per_time"] = med_data['time'] / med_data['count']
+    st.bar_chart(med_data,y ='task_per_time',x = 'phName',x_label='薬剤師名',y_label='1件あたりの時間（分）')
 
 
 def Calculate_1on1(filtered_data,combined_data):
-    
-    if filtered_data is not None:
-        one_on_one_data = filtered_data[['phName','count','task']]
-        one_on_one_data = one_on_one_data[one_on_one_data['task']=='1on1']
-        one_on_one_data['time'] = 15
-        one_on_one_data = one_on_one_data.groupby('phName',as_index =False).sum()
-        st.bar_chart(one_on_one_data,y = 'time',x ='phName',x_label='薬剤師名',y_label='1on1に要した時間（分）')
-    else:
-        one_on_one_data = combined_data[['phName','count','task']]
-        one_on_one_data = one_on_one_data[one_on_one_data['task']=='1on1']
-        one_on_one_data['time'] = 15
-        one_on_one_data = one_on_one_data.groupby('phName',as_index =False).sum()
-        st.bar_chart(one_on_one_data,y = 'time',x ='phName',x_label='薬剤師名',y_label='1on1に要した時間（分）')
+    data = _get_data(filtered_data,combined_data)
+    one_on_one_data = _filter_and_aggregate_task(data,'1on1')
+    st.bar_chart(one_on_one_data,y = 'time',x ='phName',x_label='薬剤師名',y_label='1on1に要した時間（分）')
 
 def Calculate_NST(filtered_data,combined_data):
-    if filtered_data is not None:
-        nst_data = filtered_data[['phName','count','task']]
-        nst_data = nst_data[nst_data['task']=='NST']
-        nst_data['time'] = 15
-        nst_data = nst_data.groupby('phName',as_index =False).sum()
-        st.bar_chart(nst_data,y = 'time',x ='phName',x_label='薬剤師名',y_label='NSTに要した時間（分）')
-    else:
-        nst_data = combined_data[['phName','count','task']]
-        nst_data = nst_data[nst_data['task']=='NST']
-        nst_data['time'] = 15
-        nst_data = nst_data.groupby('phName',as_index =False).sum()
-        st.bar_chart(nst_data,y = 'time',x ='phName',x_label='薬剤師名',y_label='NSTに要した時間（分）')
+    data = _get_data(filtered_data,combined_data)
+    nst_data = _filter_and_aggregate_task(data,'NST')
+    st.bar_chart(nst_data,y = 'time',x ='phName',x_label='薬剤師名',y_label='NSTに要した時間（分）')
 
 def Calculate_TDM(filtered_data,combined_data):
-    if filtered_data is not None:
-        tdm_data = filtered_data[['phName','count','task']]
-        tdm_data = tdm_data[tdm_data['task']=='TDM実施']
-        tdm_data['time'] = 15
-        tdm_data = tdm_data.groupby('phName',as_index =False).sum()
-        tdm_data["task_per_time"] = tdm_data['time'] / tdm_data['count']
-        st.dataframe(tdm_data)
-    else:
-        tdm_data = combined_data[['phName','count','task']]
-        tdm_data = tdm_data[tdm_data['task']=='TDM実施']
-        tdm_data['time'] = 15
-        tdm_data = tdm_data.groupby('phName',as_index =False).sum()
-        tdm_data["task_per_time"] = tdm_data['time'] / tdm_data['count']
-        st.dataframe(tdm_data)
+    data = _get_data(filtered_data,combined_data)
+    tdm_data = _filter_and_aggregate_task(data,'TDM実施')
+    tdm_data["task_per_time"] = tdm_data['time'] / tdm_data['count']
+    st.dataframe(tdm_data)
 
 def Calculate_TPN(filtered_data,combined_data):
-    if filtered_data is not None:
-        tpn_data = filtered_data[['phName','count','task']]
-        tpn_data = tpn_data[tpn_data['task']=='TPN評価']
-        tpn_data['time'] = 15
-        tpn_data = tpn_data.groupby('phName',as_index =False).sum()
-        tpn_data["task_per_time"] = tpn_data['time'] / tpn_data['count'] 
-        st.dataframe(tpn_data)
-    else:
-        tpn_data = combined_data[['phName','count','task']]
-        tpn_data = tpn_data[tpn_data['task']=='TPN評価']
-        tpn_data['time'] = 15
-        tpn_data = tpn_data.groupby('phName',as_index =False).sum()
-        tpn_data["task_per_time"] = tpn_data['time'] / tpn_data['count'] 
-        st.dataframe(tpn_data)
+    data = _get_data(filtered_data,combined_data)
+    tpn_data = _filter_and_aggregate_task(data,'TPN評価')
+    tpn_data["task_per_time"] = tpn_data['time'] / tpn_data['count']
+    st.dataframe(tpn_data)
 
 def Calculate_WG(filtered_data,combined_data):
-    if filtered_data is not None:
-        wg_data = filtered_data[['phName','count','task']]
-        wg_data = wg_data[wg_data['task']=='WG活動']
-        wg_data['time'] = 15
-        wg_data = wg_data.groupby('phName',as_index =False).sum()
-        st.bar_chart(wg_data,y = 'time',x ='phName',x_label='薬剤師名',y_label='WG活動に要した時間（分）')
-    else:
-        wg_data = combined_data[['phName','count','task']]
-        wg_data = wg_data[wg_data['task']=='WG活動']
-        wg_data['time'] = 15
-        wg_data = wg_data.groupby('phName',as_index =False).sum()
-        st.bar_chart(wg_data,y = 'time',x ='phName',x_label='薬剤師名',y_label='WG活動に要した時間（分）')
+    data = _get_data(filtered_data,combined_data)
+    wg_data = _filter_and_aggregate_task(data,'WG活動')
+    st.bar_chart(wg_data,y = 'time',x ='phName',x_label='薬剤師名',y_label='WG活動に要した時間（分）')
 
 def Calculate_confa(filtered_data,combined_data):
-    if filtered_data is not None:
-        confa_data = filtered_data[['phName','count','task']]
-        confa_data = confa_data[confa_data['task']=='カンファ・ラウンド']
-        confa_data['time'] = 15
-        confa_data = confa_data.groupby('phName',as_index =False).sum()
-        st.bar_chart(confa_data,y = 'time',x ='phName',x_label='薬剤師名',y_label='カンファ・ラウンドに要した時間（分）')
-    else:
-        confa_data = combined_data[['phName','count','task']]
-        confa_data = confa_data[confa_data['task']=='カンファ・ラウンド']
-        confa_data['time'] = 15
-        confa_data = confa_data.groupby('phName',as_index =False).sum()
-        st.bar_chart(confa_data,y = 'time',x ='phName',x_label='薬剤師名',y_label='カンファ・ラウンドに要した時間（分）')
+    data = _get_data(filtered_data,combined_data)
+    confa_data = _filter_and_aggregate_task(data,'カンファ・ラウンド')
+    st.bar_chart(confa_data,y = 'time',x ='phName',x_label='薬剤師名',y_label='カンファ・ラウンドに要した時間（分）')
 
 def Calculate_conference(filtered_data,combined_data):
-    if filtered_data is not None:
-        conference_data = filtered_data[['phName','count','task']]
-        conference_data = conference_data[conference_data['task']=='カンファレンス']
-        conference_data['time'] = 15
-        conference_data = conference_data.groupby('phName',as_index =False).sum()
-        st.bar_chart(conference_data,y = 'time',x ='phName',x_label='薬剤師名',y_label='カンファレンスに要した時間（分）')
-    else:
-        conference_data = combined_data[['phName','count','task']]
-        conference_data = conference_data[conference_data['task']=='カンファレンス']
-        conference_data['time'] = 15
-        conference_data = conference_data.groupby('phName',as_index =False).sum()
-        st.bar_chart(conference_data,y = 'time',x ='phName',x_label='薬剤師名',y_label='カンファレンスに要した時間（分）')
-
+    data = _get_data(filtered_data,combined_data)
+    conference_data = _filter_and_aggregate_task(data,'カンファレンス')
+    st.bar_chart(conference_data,y = 'time',x ='phName',x_label='薬剤師名',y_label='カンファレンスに要した時間（分）')
 
 def Calculate_other_consultation(filtered_data,combined_data):
-    if filtered_data is not None:
-        other_consultation_data = filtered_data[['phName','count','task']]
-        other_consultation_data = other_consultation_data[other_consultation_data['task']=='その他の職種からの相談']
-        other_consultation_data['time'] = 15
-        other_consultation_data = other_consultation_data.groupby('phName',as_index =False).sum()
-        st.dataframe(other_consultation_data)
-    else:
-        other_consultation_data = combined_data[['phName','count','task']]
-        other_consultation_data = other_consultation_data[other_consultation_data['task']=='その他の職種からの相談']
-        other_consultation_data['time'] = 15
-        other_consultation_data = other_consultation_data.groupby('phName',as_index =False).sum()
-        st.dataframe(other_consultation_data)
+    data = _get_data(filtered_data,combined_data)
+    other_consultation_data = _filter_and_aggregate_task(data,'その他の職種からの相談')
+    other_consultation_data["task_per_time"] = other_consultation_data['time'] / other_consultation_data['count']
+    st.dataframe(other_consultation_data)
 
 def Calculate_doctor_consultation(filtered_data,combined_data):
     pass
