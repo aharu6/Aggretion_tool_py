@@ -6,8 +6,18 @@ from resizeDataframe.drawChart import (
     time_per_task_chart,
     counts_per_task_chart,
     time_per_locate_chart,
-    Medication_Guidance_Record_Creation
+    Medication_Guidance_Record_Creation,
+    Calculate_1on1,
+    Calculate_NST,
+    Calculate_TDM,
+    Calculate_TPN,
+    Calculate_WG,
+    Calculate_confa,
+    Calculate_conference,
+    Calculate_other_consultation,
+    Calculate_doctor_consultation,
 )
+
 def View():
     st.title("日誌集計ツール")
     st.markdown("ようこそ。このアプリケーションは複数のCSVファイルを結合し、集計を行うツールです。")
@@ -78,8 +88,25 @@ def View():
             st.subheader("病棟ごとに記録された時間の合計")#TODO:locateごとに作成する
             time_per_locate_chart(filtered_data,combined_data)
 
-            st.subheader("薬剤師ごとの業務割合比較")
-            st.subheader("1件あたりに要した時間")#TODO:taskごとに作成する
+            #TODO: taskごとに作成する
+            st.markdown("1on1")
+            Calculate_1on1(filtered_data,combined_data)
+            st.markdown("NST")
+            Calculate_NST(filtered_data,combined_data)
+            st.markdown("TDM")
+            Calculate_TDM(filtered_data,combined_data)
+            st.markdown("TPN評価")
+            Calculate_TPN(filtered_data,combined_data)
+            st.markdown("WG活動")
+            Calculate_WG(filtered_data,combined_data)
+            st.markdown("カンファ・ラウンド")
+            Calculate_confa(filtered_data,combined_data)
+            st.markdown("カンファレンス")
+            Calculate_conference(filtered_data,combined_data)
+            st.markdown("その他の職種からの相談")
+            Calculate_other_consultation(filtered_data,combined_data)
+            st.markdown("医師からの相談")
+            Calculate_doctor_consultation(filtered_data,combined_datae)
             st.markdown("服薬指導+記録作成")
             Medication_Guidance_Record_Creation(filtered_data,combined_data)
 
