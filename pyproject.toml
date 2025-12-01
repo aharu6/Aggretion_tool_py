@@ -7,4 +7,5 @@ requires-python = ">=3.12"
 dependencies = [
     "chardet>=5.2.0",
     "dask>=2025.11.0",
+    "plotly>=6.5.0",
 ]

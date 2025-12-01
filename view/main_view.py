@@ -16,6 +16,8 @@ from resizeDataframe.drawChart import (
     Calculate_conference,
     Calculate_other_consultation,
     Calculate_doctor_consultation,
+    Calculate_nurse_consultation,
+    time_per_locate_piechart,
 )
 
 def View():
@@ -60,7 +62,13 @@ def View():
             #名前や期間で絞り込みあれば反映する
             filtered_data=GroupByTaskCount(combined_data).group_by_task_count(
                 date_range=date_range,locate_select=locate_select,name_select=name_select)
-            st.subheader("")
+            st.markdown("業務内容ごとに記録された時間")
+            time_per_task_chart(filtered_data,combined_data)
+            st.markdown("業務内容ごとの件数の合計")
+            counts_per_task_chart(filtered_data,combined_data)
+            st.markdown("場所別の業務割合表示")
+            time_per_locate_piechart(filtered_data,combined_data)
+            st.markdown("個人ごとの業務割合")
 
         elif slider == "なし":
             st.sidebar.markdown("期間選択")

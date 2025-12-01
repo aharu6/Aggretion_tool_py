@@ -54,6 +54,28 @@ def time_per_locate_chart(filtered_data,combined_data):
         time_per_locate = time_per_locate[time_per_locate['locate'].apply(lambda x:len(x) <=1)]
         st.bar_chart(data=time_per_locate,x="locate",y="time")
 
+import plotly.express as px
+def time_per_locate_piechart(filtered_data,combined_data):
+    data = _get_data(filtered_data,combined_data)
+    locate_data = data[['locate','task']]
+    #locateごと。taskごとに集計する
+    locate_data = locate_data.groupby(['locate','task']).size().reset_index(name='time')
+    locate_data['locate'] = locate_data['locate'].apply(ast.literal_eval)
+    locate_data = locate_data[locate_data['locate'].apply(lambda x:len(x) <=1)]
+    locate_data['locate'] = locate_data['locate'].apply(lambda x:x[0] if len(x)==1 else '不明')
+    #llocateごとにループを作成、時間を合計、taskごとにかかった割合を抽出し、円グラフを作成する
+    for locate in locate_data['locate'].unique():
+        locate_subset = locate_data[locate_data['locate'] == locate]
+        total_time = locate_subset['time'].sum()
+        locate_subset['percentage'] = locate_subset['time'] / total_time * 100
+        fig = px.pie(locate_subset, values="percentage",names = 'task',
+                    title=f"{locate}の業務割合",labels={'percentage':'割合 (%)','task':'業務内容'})
+        st.plotly_chart(fig)
+
+    st.dataframe(locate_data)
+
+
+
 def Medication_Guidance_Record_Creation(filtered_data,combined_data):
     data = _get_data(filtered_data,combined_data)
     med_data = _filter_and_aggregate_task(data,'服薬指導＋指導記録作成')
