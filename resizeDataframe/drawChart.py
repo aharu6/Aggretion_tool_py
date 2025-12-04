@@ -74,7 +74,15 @@ def time_per_locate_piechart(filtered_data,combined_data):
 
     st.dataframe(locate_data)
 
-
+def self_barchart(filtered_data,combined_data):
+    data = _get_data(filtered_data,combined_data)
+    self_data = data[['phName','task']]
+    self_data = self_data.groupby(['phName','task']).size().reset_index(name='time')
+    total_by_phName = self_data.groupby('phName')['time'].sum().reset_index(name='total_time')
+    self_data = self_data.merge(total_by_phName,on='phName')
+    self_data['task_per_time'] = self_data['time'] /self_data['total_time'] *100
+    print(self_data)
+    st.bar_chart(self_data,horizontal=True,x = "phName",y="task_per_time",color = 'task',stack=True)
 
 def Medication_Guidance_Record_Creation(filtered_data,combined_data):
     data = _get_data(filtered_data,combined_data)

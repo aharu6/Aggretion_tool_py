@@ -18,6 +18,7 @@ from resizeDataframe.drawChart import (
     Calculate_doctor_consultation,
     Calculate_nurse_consultation,
     time_per_locate_piechart,
+    self_barchart,
 )
 
 def View():
@@ -69,6 +70,7 @@ def View():
             st.markdown("場所別の業務割合表示")
             time_per_locate_piechart(filtered_data,combined_data)
             st.markdown("個人ごとの業務割合")
+            self_barchart(filtered_data,combined_data)
 
         elif slider == "なし":
             st.sidebar.markdown("期間選択")
