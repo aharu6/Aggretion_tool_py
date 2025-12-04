@@ -1,5 +1,6 @@
 import streamlit as st
-
+from view.TASK_COLOR_MAP import TASK_COLOR_MAP
+import plotly.express as px
 def _get_data(filtered_data,combined_data):
     return filtered_data if filtered_data is not None else combined_data
 
@@ -24,20 +25,27 @@ def time_per_task_chart(filtered_data,combined_data):
         task_counts = combined_data.groupby('task').size().reset_index(name='time')
         task_counts['time'] = task_counts['time']*15
     if filtered_data is not None:
-        st.bar_chart(data=task_counts,x="task",y="time")        
+        bar_chart = px.bar(data_frame=task_counts,x="task",y="time",color='task',
+            color_discrete_map=TASK_COLOR_MAP)        
+        st.plotly_chart(bar_chart)
     else:
-        st.bar_chart(data=task_counts,x="task",y="time")
+        bar_chart = px.bar(data_frame=task_counts,x="task",y="time",color='task',
+            color_discrete_map=TASK_COLOR_MAP)      
+        st.plotly_chart(bar_chart)
 
 def counts_per_task_chart(filtered_data,combined_data):
     if filtered_data is not None:
         task_counts = filtered_data.groupby('task')
         task_counts = task_counts['count'].sum().reset_index(name='count_sum')
-        st.bar_chart(data=task_counts,x="task",y="count_sum")
+        bar_chart = px.bar(data_frame=task_counts,x="task",y="count_sum",color='task',
+            color_discrete_map=TASK_COLOR_MAP)
+        st.plotly_chart(bar_chart)
     else:
         task_counts = combined_data.groupby('task')
         task_counts = task_counts['count'].sum().reset_index(name='count_sum')
-        st.bar_chart(data=task_counts,x="task",y="count_sum")
-
+        bar_chart = px.bar(data_frame=task_counts,x="task",y="count_sum",color='task',
+            color_discrete_map=TASK_COLOR_MAP)
+        st.plotly_chart(bar_chart)
 import ast
 def time_per_locate_chart(filtered_data,combined_data):
     if filtered_data is not None:
@@ -68,8 +76,10 @@ def time_per_locate_piechart(filtered_data,combined_data):
         locate_subset = locate_data[locate_data['locate'] == locate]
         total_time = locate_subset['time'].sum()
         locate_subset['percentage'] = locate_subset['time'] / total_time * 100
-        fig = px.pie(locate_subset, values="percentage",names = 'task',
-                    title=f"{locate}の業務割合",labels={'percentage':'割合 (%)','task':'業務内容'})
+        fig = px.pie(data_frame=locate_subset, values="percentage",names = 'task',
+                    title=f"{locate}の業務割合",labels={'percentage':'割合 (%)','task':'業務内容'},
+                    color='task',
+                    color_discrete_map=TASK_COLOR_MAP)
         st.plotly_chart(fig)
 
     st.dataframe(locate_data)
@@ -81,8 +91,9 @@ def self_barchart(filtered_data,combined_data):
     total_by_phName = self_data.groupby('phName')['time'].sum().reset_index(name='total_time')
     self_data = self_data.merge(total_by_phName,on='phName')
     self_data['task_per_time'] = self_data['time'] /self_data['total_time'] *100
-    print(self_data)
-    st.bar_chart(self_data,horizontal=True,x = "phName",y="task_per_time",color = 'task',stack=True)
+    bar_chart = px.bar(data_frame=self_data,orientation='h',x = "task_per_time",y="phName",color = 'task',
+        color_discrete_map=TASK_COLOR_MAP)
+    st.plotly_chart(bar_chart)
 
 def Medication_Guidance_Record_Creation(filtered_data,combined_data):
     data = _get_data(filtered_data,combined_data)
