@@ -10,13 +10,13 @@ from resizeDataframe.drawChart import (
 )
 def View():
     st.title("日誌集計ツール")
-    st.markdown("ようこそ。このアプリケーションは複数のCSVファイルを結合し、集計を行うツールです。")
+    st.markdown("このアプリケーションは複数のCSVファイルを結合し、集計を行うツールです。")
     st.markdown("最初にcsvファイルを含むフォルダをアップロードしてください")
     combined_data=None
     #フォルダを読み込む
     uploadfiles =st.sidebar.file_uploader(
         "フォルダを選択してください",accept_multiple_files='directory')
-    
+    #TODO:フォルダは複数選択できるようにする
     
     if uploadfiles:
         combined_data = JoinFiles(uploadfiles).join()

@@ -3,6 +3,7 @@ import pandas as pd
 from io import StringIO
 import chardet
 import re
+import os
 from concurrent.futures import ThreadPoolExecutor,as_completed
 from resizeDataframe.creaningDataframe import cleaning_df
 class JoinFiles:
@@ -51,7 +52,20 @@ class JoinFiles:
             except Exception as e:
                 print(f"ファイルの処理中にエラーが発生しました: {file.name}, エラー: {e}")
                 return None
-
+        
+        check_folders = [f for f in os.listdir('.') if os.path.isdir(f)]
+        if check_folders:
+            for subfolder in check_folders:
+                with ThreadPoolExecutor(max_workers=4) as executor:
+                    future_to_file = {executor.submit(process_single_file,os.path.join(subfolder,f)):f for f in os.listdir(subfolder) if f.endswith('.csv')}
+                    for future in as_completed(future_to_file):
+                        df = future.result()
+                        if df is not None:
+                            if combined_df is None:
+                                combined_df = df
+                            else:
+                                combined_df = pd.concat([combined_df,df],ignore_index=True)
+                                
         dataframes=[] 
         with ThreadPoolExecutor(max_workers=4) as executor:
             future_to_file = {executor.submit(process_single_file,file):file for file in self.files}
