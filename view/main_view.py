@@ -6,30 +6,18 @@ from resizeDataframe.drawChart import (
     time_per_task_chart,
     counts_per_task_chart,
     time_per_locate_chart,
-    Medication_Guidance_Record_Creation,
-    Calculate_1on1,
-    Calculate_NST,
-    Calculate_TDM,
-    Calculate_TPN,
-    Calculate_WG,
-    Calculate_confa,
-    Calculate_conference,
-    Calculate_other_consultation,
-    Calculate_doctor_consultation,
-    Calculate_nurse_consultation,
-    time_per_locate_piechart,
-    self_barchart,
+    Medication_Guidance_Record_Creation
 )
 
 def View():
     st.title("日誌集計ツール")
-    st.markdown("ようこそ。このアプリケーションは複数のCSVファイルを結合し、集計を行うツールです。")
+    st.markdown("このアプリケーションは複数のCSVファイルを結合し、集計を行うツールです。")
     st.markdown("最初にcsvファイルを含むフォルダをアップロードしてください")
     combined_data=None
     #フォルダを読み込む
     uploadfiles =st.sidebar.file_uploader(
         "フォルダを選択してください",accept_multiple_files='directory')
-    
+    #TODO:フォルダは複数選択できるようにする
     
     if uploadfiles:
         combined_data = JoinFiles(uploadfiles).join()
@@ -63,14 +51,20 @@ def View():
             #名前や期間で絞り込みあれば反映する
             filtered_data=GroupByTaskCount(combined_data).group_by_task_count(
                 date_range=date_range,locate_select=locate_select,name_select=name_select)
-            st.markdown("業務内容ごとに記録された時間")
-            time_per_task_chart(filtered_data,combined_data)
-            st.markdown("業務内容ごとの件数の合計")
-            counts_per_task_chart(filtered_data,combined_data)
-            st.markdown("場所別の業務割合表示")
-            time_per_locate_piechart(filtered_data,combined_data)
-            st.markdown("個人ごとの業務割合")
-            self_barchart(filtered_data,combined_data)
+            st.subheader("各タスクの合計時間")
+            total_time_per_task(filtered_data,combined_data)
+            st.subheader("病棟ごとの集計")
+            componentChart_location(filtered_data,combined_data)
+            st.subheader("個人ごとの集計")
+            st.subheader("総件数と件数あたりの時間")
+            st.subheader("業務内容ごとの件数")
+            st.subheader("業務内容ごとの場所")
+            st.subheader("時間帯ごとに業務が記録された回数")
+            st.subheader("その他コメント")
+            st.subheader("個人ごとの総時間数")
+            st.subheader("個人ごとの時間数・件数・1件あたりの時間・平均値")
+
+
 
         elif slider == "なし":
             st.sidebar.markdown("期間選択")
