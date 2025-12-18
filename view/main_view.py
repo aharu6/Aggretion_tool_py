@@ -6,7 +6,9 @@ from resizeDataframe.drawChart import (
     time_per_task_chart,
     counts_per_task_chart,
     time_per_locate_chart,
-    Medication_Guidance_Record_Creation
+    Medication_Guidance_Record_Creation,
+    total_time_per_task,
+    componentChart_location,
 )
 def View():
     st.title("日誌集計ツール")
@@ -50,7 +52,20 @@ def View():
             #名前や期間で絞り込みあれば反映する
             filtered_data=GroupByTaskCount(combined_data).group_by_task_count(
                 date_range=date_range,locate_select=locate_select,name_select=name_select)
-            st.subheader("")
+            st.subheader("各タスクの合計時間")
+            total_time_per_task(filtered_data,combined_data)
+            st.subheader("病棟ごとの集計")
+            componentChart_location(filtered_data,combined_data)
+            st.subheader("個人ごとの集計")
+            st.subheader("総件数と件数あたりの時間")
+            st.subheader("業務内容ごとの件数")
+            st.subheader("業務内容ごとの場所")
+            st.subheader("時間帯ごとに業務が記録された回数")
+            st.subheader("その他コメント")
+            st.subheader("個人ごとの総時間数")
+            st.subheader("個人ごとの時間数・件数・1件あたりの時間・平均値")
+
+
 
         elif slider == "なし":
             st.sidebar.markdown("期間選択")
