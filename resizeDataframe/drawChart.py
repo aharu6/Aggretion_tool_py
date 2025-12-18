@@ -16,6 +16,131 @@ def _filter_and_aggregate_task(data,task_name):
     task_data = task_data.groupby('phName',as_index =False)[['time','count']].sum()
     return task_data
     
+def Calculate_1on1(filtered_data,combined_data):
+    def _extract_data(df):
+        df=df[['phName','task']]
+        df=df[df['task']=='1on1']
+        df=df.groupby('phName').size().reset_index(name='count')
+        df['time'] = df['count']*15
+        return df
+    df=_extract_data(filtered_data if filtered_data is not None else combined_data)
+    st.bar_chart(data=df,x='phName',y='time',y_label='総時間(分)',x_label='薬剤師名')
+
+def Calculate_NST(filtered_data,combined_data):
+    def _extract_data(df):
+        df=df[['phName','task']]
+        df=df[df['task']=='NST']
+        df=df.groupby('phName').size().reset_index(name='count')
+        df['time'] = df['count']*15
+        return df
+    df=_extract_data(filtered_data if filtered_data is not None else combined_data)
+    st.bar_chart(data=df,x='phName',y='time',y_label='総時間(分)',x_label='薬剤師名')
+
+def Calculate_TDM(filtered_data,combined_data):
+    def _extract_data(df):
+        df=df[['phName','task',"count"]]
+        df=df[df['task']=='TDM実施']
+        df=df.groupby(['phName','task']).agg(
+            count_sum =('count','sum'),
+            size_count =('task','size')
+        ).reset_index()
+        df['time'] = df['size_count']*15
+        df['time_per_count'] = df['time'] / df['count_sum']
+        return df
+    df=_extract_data(filtered_data if filtered_data is not None else combined_data)
+    st.dataframe(df)
+        
+
+def Calculate_TPN(filtered_data,combined_data):
+    def _extract_data(df):
+        df=df[['phName','task',"count"]]
+        df=df[df['task']=='TPN評価']
+        df=df.groupby(['phName','task']).agg(
+            count_sum =('count','sum'),
+            size_count =('task','size')
+        ).reset_index()
+        df['time'] = df['size_count']*15
+        df['time_per_count'] = df['time'] / df['count_sum']
+        return df
+    df=_extract_data(filtered_data if filtered_data is not None else combined_data)
+    st.dataframe(df)
+
+def Calculate_WG(filtered_data,combined_data):
+    def _extract_data(df):
+        df=df[['phName','task']]
+        df=df[df['task']=='WG活動']
+        df=df.groupby('phName').size().reset_index(name='count')
+        df['time'] = df['count']*15
+        return df
+    df=_extract_data(filtered_data if filtered_data is not None else combined_data)
+    st.bar_chart(data=df,x='phName',y='time',y_label='総時間(分)',x_label='薬剤師名')
+
+
+def Calculate_confa(filtered_data,combined_data):
+    def _extract_data(df):
+        df=df[['phName','task']]
+        df=df[df['task']=='カンファ・ラウンド']
+        df=df.groupby('phName').size().reset_index(name='count')
+        df['time'] = df['count']*15
+        return df
+    df=_extract_data(filtered_data if filtered_data is not None else combined_data)
+    st.bar_chart(data=df,x='phName',y='time',y_label='総時間(分)',x_label='薬剤師名')
+
+def Calculate_conference(filtered_data,combined_data):
+    def _extract_data(df):
+        df=df[['phName','task']]
+        df=df[df['task']=='カンファレンス']
+        df=df.groupby('phName').size().reset_index(name='count')
+        df['time'] = df['count']*15
+        return df
+    df=_extract_data(filtered_data if filtered_data is not None else combined_data)
+    st.bar_chart(data=df,x='phName',y='time',y_label='総時間(分)',x_label='薬剤師名')
+
+
+def Calculate_other_consultation(filtered_data,combined_data):
+    def _extract_data(df):
+        df=df[['phName','task','count']]
+        df=df[df['task']=='その他の職種からの相談']
+        df=df.groupby(['phName','task']).agg(
+            count_sum =('count','sum'),
+            size_count =('task','size')
+        ).reset_index()
+        df['time'] = df['size_count']*15
+        df['time_per_count'] = df['time'] / df['count_sum']
+        return df
+
+    #TODO:１けんあたりの時間は必要か、データフレームで残すか、グラフを切り替えるか
+    df=_extract_data(filtered_data if filtered_data is not None else combined_data)
+    st.bar_chart(data=df,x='phName',y='time',y_label='総時間(分)',x_label='薬剤師名')
+
+def Calculate_doctor_consultation(filtered_data,combined_data):
+    def _extract_data(df):
+        df=df[['phName','task','count']]
+        df=df[df['task']=='医師からの相談']
+        df=df.groupby(['phName','task']).agg(
+            count_sum =('count','sum'),
+            size_count =('task','size')
+        ).reset_index()
+        df['time'] = df['size_count']*15
+        df['time_per_count'] = df['time'] / df['count_sum']
+        return df
+    df=_extract_data(filtered_data if filtered_data is not None else combined_data)
+    st.dataframe(df)
+
+def Calculate_nurse_consultation(filtered_data,combined_data):
+    def _extract_data(df):
+        df=df[['phName','task','count']]
+        df=df[df['task']=='看護師からの相談']
+        df=df.groupby(['phName','task']).agg(
+            count_sum =('count','sum'),
+            size_count =('task','size')
+        ).reset_index()
+        df['time'] = df['size_count']*15
+        df['time_per_count'] = df['time'] / df['count_sum']
+        return df
+    df=_extract_data(filtered_data if filtered_data is not None else combined_data)
+    st.dataframe(df)
+
 
 def time_per_task_chart(filtered_data,combined_data):
     def _extract_data(df):
@@ -29,11 +154,11 @@ def time_per_task_chart(filtered_data,combined_data):
 def counts_per_task_chart(filtered_data,combined_data):
     def _extract_data(df):
         task_counts = df[['task','count']]
-        task_counts = task_counts.groupby('task').sum().reset_index(name='count_sum')
+        task_counts = task_counts.groupby('task').sum().reset_index()
         return task_counts
     
     task_counts=_extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.bar_chart(data=task_counts,x="task",y="count_sum")
+    st.bar_chart(data=task_counts,x="task",y="count")
     
 import ast
 def time_per_locate_chart(filtered_data,combined_data):
@@ -41,7 +166,7 @@ def time_per_locate_chart(filtered_data,combined_data):
         locate_data = df[['locate']].groupby('locate').size().reset_index(name='time')
         locate_data['time'] = locate_data['time']*15
         locate_data['locate']= locate_data['locate'].apply(ast.literal_eval)
-        locate_data['locate'] = locate_data['locate'].apply(lambda x: x[0] if len(x)>1 else x[0])
+        locate_data['locate'] = locate_data['locate'].apply(lambda x: x[0] if len(x)>0 else 'Unknown')
         return locate_data
     
     df=_extract_locate_data(filtered_data if filtered_data is not None else combined_data)
@@ -81,7 +206,7 @@ def componentChart_location(filtered_data,combined_data):
         df=df.groupby(['locate','task']).size().reset_index(name='count')
         #複数病棟記載されている場合は強制的に先頭の病棟へ統一
         df['locate'] = df['locate'].apply(ast.literal_eval)
-        df['locate'] = df['locate'].apply(lambda x: x[0] if len(x)>1 else x[0])
+        df['locate'] = df['locate'].apply(lambda x: x[0] if len(x)>0 else 'Unknown')
         return df
     
     df = _extract_data(filtered_data if filtered_data is not None else combined_data)

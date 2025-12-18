@@ -6,7 +6,19 @@ from resizeDataframe.drawChart import (
     time_per_task_chart,
     counts_per_task_chart,
     time_per_locate_chart,
-    Medication_Guidance_Record_Creation
+    Medication_Guidance_Record_Creation,
+    Calculate_1on1,
+    Calculate_NST,
+    Calculate_TDM,
+    Calculate_TPN,
+    Calculate_WG,
+    Calculate_confa,
+    Calculate_conference,
+    Calculate_other_consultation,
+    Calculate_doctor_consultation,
+    Calculate_nurse_consultation,
+    total_time_per_task,
+    componentChart_location
 )
 
 def View():
