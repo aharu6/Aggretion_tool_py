@@ -48,14 +48,16 @@ def time_per_locate_chart(filtered_data,combined_data):
     st.bar_chart(data=df,x="locate",y="time")
 
 def Medication_Guidance_Record_Creation(filtered_data,combined_data):
-    if filtered_data is not None:
-        #服薬指導＋記録作成のみの業務内容で、個人ごとに集計、coutsの合計から、１けんあたりに要した時間を算出
-        med_data = filtered_data[['phName','count','task']]
+    def _extract_data(df):
+        med_data = df[['phName','count','task']]
         med_data = med_data[med_data['task']=='服薬指導＋指導記録作成']
         med_data['time'] = 15
         med_data = med_data.groupby('phName',as_index =False).sum()
-        med_data['time_per_task'] = med_data['count'] / med_data['time']
-        st.bar_chart(med_data,y ='time_per_task',x = 'phName',x_label='薬剤師名',y_label='1件あたりの時間（分）')
+        med_data['time_per_task'] = med_data['time'] / med_data['count']
+        return med_data
+    med_data=_extract_data(filtered_data if filtered_data is not None else combined_data)
+    st.bar_chart(med_data,y ='time_per_task',x = 'phName',x_label='薬剤師名',y_label='1件あたりの時間（分）')
+
 
 def total_time_per_task(filtered_data,combined_data):
     def _extract_data(df):
