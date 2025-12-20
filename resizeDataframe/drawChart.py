@@ -125,7 +125,7 @@ def Calculate_doctor_consultation(filtered_data,combined_data):
         df['time_per_count'] = df['time'] / df['count_sum']
         return df
     df=_extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.dataframe(df)
+    st.dataframe(df,column_config={'phName':'薬剤師名','count_sum':'総件数','size_count':'記録回数','time':'総時間(分)','time_per_count':'1件あたりの時間(分)'})
 
 def Calculate_nurse_consultation(filtered_data,combined_data):
     def _extract_data(df):
@@ -139,7 +139,7 @@ def Calculate_nurse_consultation(filtered_data,combined_data):
         df['time_per_count'] = df['time'] / df['count_sum']
         return df
     df=_extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.dataframe(df)
+    st.dataframe(df,column_config={'phName':'薬剤師名','count_sum':'総件数','size_count':'記録回数','time':'総時間(分)','time_per_count':'1件あたりの時間(分)'})
 
 
 def time_per_task_chart(filtered_data,combined_data):
@@ -222,4 +222,48 @@ def componentChart_location(filtered_data,combined_data):
             st.plotly_chart(fig)
     except Exception as e:
         st.warning(f"チャートの作成中にエラーが発生しました: {e}")
+
+import plotly.graph_objects as go
+
+def research_info_chart(filtered_data,combined_data):
+    def _extract_data(df):
+        df = df[['phName','task','count']]
+        df = df[df['task']=='薬剤使用状況の把握等（情報収集）']
+        df = df.groupby(['phName','task']).agg(
+            count_sum =('count','sum'),
+            size_count =('task','size'),
+        ).reset_index()
+        return df
+    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
+    fig = go.Figure(
+        data=[
+            go.Bar(
+                name="件数",
+                x=df['phName'],
+                y=df['count_sum'],
+            ),
+            go.Bar(
+                name="記録回数",
+                x=df['phName'],
+                y=df['size_count'],
+            )
+        ]
+    )
+
+    st.plotly_chart(fig)#TODO:x軸とy軸のラベル名を変更
+
+    df['time_per_counte'] = (df['size_count']*15) / df['count_sum']
+    st.dataframe(df,column_config={'phName':'薬剤師名','count_sum':'総件数','size_count':'記録回数','time_per_counte':'1件あたりの時間(分)'})
+
+def Jokusou_chart(filtered_data,combined_data):
+    def _extract_data(df):
+        df = df[['phName','task']]
+        df = df[df['task']=='褥瘡']
+        df = df.groupby(['phName','task']).size().reset_index(name='count_sum')
+        df['time'] = df['count_sum']*15
+        return df
+
+    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
+    st.bar_chart(data=df,x='phName',y='time',x_label='薬剤師名',y_label='総時間(分)')
+        
 

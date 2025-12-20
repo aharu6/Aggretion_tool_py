@@ -18,7 +18,10 @@ from resizeDataframe.drawChart import (
     Calculate_doctor_consultation,
     Calculate_nurse_consultation,
     total_time_per_task,
-    componentChart_location
+    componentChart_location,
+
+    research_info_chart,
+    Jokusou_chart,
 )
 
 def View():
@@ -125,8 +128,18 @@ def View():
             Calculate_doctor_consultation(filtered_data,combined_data)
             st.markdown("看護師からの相談")
             Calculate_nurse_consultation(filtered_data,combined_data)
-            
+            st.markdown("管理業務")#個人ごとの総時間グラフ
+            st.markdown("業務調整")#TODO:個人ごとの総時間グラフ
+            st.markdown("事前準備")#個人ごとの総時間グラフ
+            st.markdown("持参薬を確認")#件数、総時間、１けんあたりの時間、グラフ描画必要
+            st.markdown("処方代理修正")#件数、総時間、１けんあたりの時間、グラフ描画
             st.markdown("服薬指導+記録作成")
-            Medication_Guidance_Record_Creation(filtered_data,combined_data)
-
-            
+            Medication_Guidance_Record_Creation(filtered_data,combined_data)#グラフとデータフレーム
+            #TODO:データフレームは件数と１けんあたりの時間のみ
+            st.markdown("無菌調整関連業務")
+            st.markdown("薬剤セット確認")#TODO:個人ごとの、総時間、グラフ描画
+            st.markdown("薬剤使用状況の把握等(情報収集)")#TODO:個人んごとの件数と１けんあたりの時間を並列棒グラフ
+            research_info_chart(filtered_data,combined_data)
+            #TODO:別途データフレームで件数、総時間、１件あたりの時間
+            st.markdown("褥瘡")#個人ごとの、総時間、グラフ描画
+            Jokusou_chart(filtered_data,combined_data)
