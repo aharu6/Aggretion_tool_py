@@ -20,6 +20,7 @@ from resizeDataframe.drawChart import (
     total_time_per_task,
     componentChart_location,
 
+    drag_set_check,
     research_info_chart,
     Jokusou_chart,
 )
@@ -137,8 +138,9 @@ def View():
             Medication_Guidance_Record_Creation(filtered_data,combined_data)#グラフとデータフレーム
             #TODO:データフレームは件数と１けんあたりの時間のみ
             st.markdown("無菌調整関連業務")
-            st.markdown("薬剤セット確認")#TODO:個人ごとの、総時間、グラフ描画
-            st.markdown("薬剤使用状況の把握等(情報収集)")#TODO:個人んごとの件数と１けんあたりの時間を並列棒グラフ
+            st.markdown("薬剤セット確認")#個人ごとの、総時間、グラフ描画
+            drag_set_check(filtered_data,combined_data)
+            st.markdown("薬剤使用状況の把握等(情報収集)")#個人ごとの件数と１けんあたりの時間を並列棒グラフ
             research_info_chart(filtered_data,combined_data)
             #TODO:別途データフレームで件数、総時間、１件あたりの時間
             st.markdown("褥瘡")#個人ごとの、総時間、グラフ描画
