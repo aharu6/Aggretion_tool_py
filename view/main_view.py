@@ -20,6 +20,7 @@ from resizeDataframe.drawChart import (
     total_time_per_task,
     componentChart_location,
 
+    clean_preparation,
     drag_set_check,
     research_info_chart,
     Jokusou_chart,
@@ -43,7 +44,7 @@ def View():
         st.session_state.prev_slider = None
     
     #TODO ファイル読み込み中のプログレスバーを表示、中に読み込んだデータを元に集計項目を作成する旨を記載
-    slider = st.sidebar.pills("詳細な絞り込み",options=["あり","なし"])
+    slider = st.sidebar.pills("表示モード",options=["概要","業務別分析"])
 
     if st.session_state.prev_slider != slider:
         #前の選択をクリア
@@ -55,9 +56,8 @@ def View():
         st.rerun()
 
     if combined_data is not None:
-        if slider == "あり":
+        if slider == "概要":
             #日付以外に病棟名や個人名で絞り込みを行う
-            #絞り込みありの場合
             locate_select =st.sidebar.multiselect(label="病棟の絞り込み",options=combined_data['locate'].unique())
             name_select = st.sidebar.multiselect(label="個人名の選択",options=combined_data["phName"].unique())
 
@@ -82,7 +82,7 @@ def View():
 
 
 
-        elif slider == "なし":
+        elif slider == "業務別分析":
             st.sidebar.markdown("期間選択")
             date_range = st.sidebar.date_input("日付範囲を選択してください",[])
             filtered_data= GroupByTaskCount(combined_data).group_by_task_count(
@@ -129,15 +129,17 @@ def View():
             Calculate_doctor_consultation(filtered_data,combined_data)
             st.markdown("看護師からの相談")
             Calculate_nurse_consultation(filtered_data,combined_data)
-            st.markdown("管理業務")#個人ごとの総時間グラフ
+            st.markdown("管理業務")#TODO:個人ごとの総時間グラフ
             st.markdown("業務調整")#TODO:個人ごとの総時間グラフ
             st.markdown("事前準備")#個人ごとの総時間グラフ
             st.markdown("持参薬を確認")#件数、総時間、１けんあたりの時間、グラフ描画必要
-            st.markdown("処方代理修正")#件数、総時間、１けんあたりの時間、グラフ描画
+            st.markdown("処方代理修正")#TODO:件数、総時間、１けんあたりの時間、グラフ描画
+
             st.markdown("服薬指導+記録作成")
             Medication_Guidance_Record_Creation(filtered_data,combined_data)#グラフとデータフレーム
-            #TODO:データフレームは件数と１けんあたりの時間のみ
-            st.markdown("無菌調整関連業務")
+            #データフレームは件数と１けんあたりの時間のみ
+            st.markdown("無菌調整関連業務")#個人ごとの時間
+            clean_preparation(filtered_data,combined_data)
             st.markdown("薬剤セット確認")#個人ごとの、総時間、グラフ描画
             drag_set_check(filtered_data,combined_data)
             st.markdown("薬剤使用状況の把握等(情報収集)")#個人ごとの件数と１けんあたりの時間を並列棒グラフ
