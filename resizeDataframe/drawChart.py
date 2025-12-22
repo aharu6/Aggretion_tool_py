@@ -125,7 +125,7 @@ def Calculate_doctor_consultation(filtered_data,combined_data):
         df['time_per_count'] = df['time'] / df['count_sum']
         return df
     df=_extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.dataframe(df)
+    st.dataframe(df,column_config={'phName':'薬剤師名','count_sum':'総件数','size_count':'記録回数','time':'総時間(分)','time_per_count':'1件あたりの時間(分)'})
 
 def Calculate_nurse_consultation(filtered_data,combined_data):
     def _extract_data(df):
@@ -139,7 +139,7 @@ def Calculate_nurse_consultation(filtered_data,combined_data):
         df['time_per_count'] = df['time'] / df['count_sum']
         return df
     df=_extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.dataframe(df)
+    st.dataframe(df,column_config={'phName':'薬剤師名','count_sum':'総件数','size_count':'記録回数','time':'総時間(分)','time_per_count':'1件あたりの時間(分)'})
 
 
 def time_per_task_chart(filtered_data,combined_data):
@@ -172,16 +172,51 @@ def time_per_locate_chart(filtered_data,combined_data):
     df=_extract_locate_data(filtered_data if filtered_data is not None else combined_data)
     st.bar_chart(data=df,x="locate",y="time")
 
+def Recept_Agent_Modification(filtered_data,combined_data): #件数、総時間、１けんあたりの時間、グラフ描画
+    def _extract_data(df):
+        df = df[['phName','count','task']]
+        df = df[df['task'] =='処方代理修正']
+        df['time'] = 15 * df['count']
+        df = df.groupby(['phName','task']).agg(
+            count_sum=('count','sum'),
+            total_time=('time','sum')
+        ).reset_index()
+        
+        df['time_per_task'] = df['total_time'] / df['count_sum']
+        return df
+    df=_extract_data(filtered_data if filtered_data is not None else combined_data)
+    fig = go.Figure(
+        data = [
+            go.Bar(
+                name="件数(件)",
+                x=df['phName'],
+                y=df['count_sum']
+            ),
+            go.Bar(
+                name="1件あたりの時間(分)",
+                x=df['phName'],
+                y=df['time_per_task']
+            )
+        ]
+    )
+    fig.update_layout(
+        xaxis_title="薬剤師名",
+        yaxis_title="件数(件)/1件あたりの時間(分)",
+    )
+    st.plotly_chart(fig)
+
 def Medication_Guidance_Record_Creation(filtered_data,combined_data):
     def _extract_data(df):
         med_data = df[['phName','count','task']]
         med_data = med_data[med_data['task']=='服薬指導＋指導記録作成']
-        med_data['time'] = 15
+        med_data['time'] = 15 * med_data['count']
         med_data = med_data.groupby('phName',as_index =False).sum()
         med_data['time_per_task'] = med_data['time'] / med_data['count']
         return med_data
     med_data=_extract_data(filtered_data if filtered_data is not None else combined_data)
     st.bar_chart(med_data,y ='time_per_task',x = 'phName',x_label='薬剤師名',y_label='1件あたりの時間（分）')
+    #TODO:1件あたりの時間が算出できなくて、グラフが描画できない場合にはそのアラート表示
+    st.dataframe(med_data[['phName','count','time_per_task']],column_config={'phName':'薬剤師名','count':'総件数','time_per_task':'1件あたりの時間(分)'})
 
 
 def total_time_per_task(filtered_data,combined_data):
@@ -222,4 +257,73 @@ def componentChart_location(filtered_data,combined_data):
             st.plotly_chart(fig)
     except Exception as e:
         st.warning(f"チャートの作成中にエラーが発生しました: {e}")
+
+def clean_preparation(filtered_data,combined_data):
+    def _extract_data(df):
+        df = df[['phName','task']]
+        df = df[df['task']=='無菌調製関連業務']
+        df = df.groupby(['phName','task']).size().reset_index(name='count_sum')
+        df['time'] = df['count_sum']*15
+        return df
+    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
+    st.bar_chart(data=df,x='phName',y='time',x_label='薬剤師名',y_label='総時間(分)')
+
+def drag_set_check(filtered_data,combined_data):
+    def _extract_data(df):
+        df = df[['phName','task']]
+        df = df[df['task']=='薬剤セット・確認']
+        df = df.groupby(['phName','task']).size().reset_index(name='count_sum')
+        df['time'] = df['count_sum']*15
+        return df
+    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
+    st.bar_chart(data=df,x='phName',y='time',x_label='薬剤師名',y_label='総時間(分)')
+
+import plotly.graph_objects as go
+
+def research_info_chart(filtered_data,combined_data):
+    def _extract_data(df):
+        df = df[['phName','task','count']]
+        df = df[df['task']=='薬剤使用状況の把握等（情報収集）']
+        df = df.groupby(['phName','task']).agg(
+            count_sum =('count','sum'),
+            size_count =('task','size'),
+        ).reset_index()
+        df['time'] = df['size_count']*15
+        df['time_per_count'] = df['time'] / df['count_sum']
+        return df
+    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
+    fig = go.Figure(
+        data=[
+            go.Bar(
+                name="件数(件)",
+                x=df['phName'],
+                y=df['count_sum'],
+            ),
+            go.Bar(
+                name="1件あたりの時間(分)",
+                x=df['phName'],
+                y=df['time_per_count'],
+            )
+        ]
+    )
+    fig.update_layout(
+        xaxis_title="薬剤師名",
+        yaxis_title="件数(件)/1件あたりの時間(分)",
+    )
+    st.plotly_chart(fig)
+
+    df['time_per_counte'] = (df['size_count']*15) / df['count_sum']
+    st.dataframe(df,column_config={'phName':'薬剤師名','count_sum':'総件数','size_count':'記録回数','time_per_counte':'1件あたりの時間(分)'})
+
+def Jokusou_chart(filtered_data,combined_data):
+    def _extract_data(df):
+        df = df[['phName','task']]
+        df = df[df['task']=='褥瘡']
+        df = df.groupby(['phName','task']).size().reset_index(name='count_sum')
+        df['time'] = df['count_sum']*15
+        return df
+
+    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
+    st.bar_chart(data=df,x='phName',y='time',x_label='薬剤師名',y_label='総時間(分)')
+        
 
