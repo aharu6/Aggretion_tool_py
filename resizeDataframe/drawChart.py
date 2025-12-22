@@ -147,7 +147,7 @@ def Calculate_other_consultation(filtered_data,combined_data):
         xaxis_title="薬剤師名",
         yaxis_title="件数(件)/1件あたりの時間(min)",
     )
-    st.plotly_chart(fig)
+    st.plotly_chart(fig,key = "TDM_chart")
 
 def Calculate_doctor_consultation(filtered_data,combined_data):
     def _extract_data(df):
@@ -179,7 +179,7 @@ def Calculate_doctor_consultation(filtered_data,combined_data):
         xaxis_title="薬剤師名",
         yaxis_title="件数(件)/1件あたりの時間(min)",
     )
-    st.plotly_chart(fig)
+    st.plotly_chart(fig,key = "doctor_consultation_chart")
 
 
 def Calculate_nurse_consultation(filtered_data,combined_data):
@@ -212,7 +212,7 @@ def Calculate_nurse_consultation(filtered_data,combined_data):
         xaxis_title="薬剤師名",
         yaxis_title="件数(件)/1件あたりの時間(min)",
     )
-    st.plotly_chart(fig)
+    st.plotly_chart(fig,key="nurse_consultation_chart")
 
 
 
@@ -281,7 +281,7 @@ def Check_Medication(filtered_data,combined_data):
         ]
     )
     fig.update_layout(xaxis_title="薬剤師名",yaxis_title="件数(件)/1件あたりの時間(min)",)
-    st.plotly_chart(fig)
+    st.plotly_chart(fig,key = "Check_Medication_chart")
 
 
 def Recept_Agent_Modification(filtered_data,combined_data): #件数、総時間、１けんあたりの時間、グラフ描画
@@ -314,7 +314,7 @@ def Recept_Agent_Modification(filtered_data,combined_data): #件数、総時間�
         xaxis_title="薬剤師名",
         yaxis_title="件数(件)/1件あたりの時間(min)",
     )
-    st.plotly_chart(fig)
+    st.plotly_chart(fig,key="Recept_Agent_Modification_chart")
 
 def Medication_Guidance_Record_Creation(filtered_data,combined_data):
     def _extract_data(df):
@@ -346,7 +346,7 @@ def Medication_Guidance_Record_Creation(filtered_data,combined_data):
         xaxis_title="薬剤師名",
         yaxis_title="件数(件)/1件あたりの時間(min)",
     )
-    st.plotly_chart(fig)
+    st.plotly_chart(fig,key="Medication_Guidance_Record_Creation_chart")
     #TODO:1件あたりの時間が算出できなくて、グラフが描画できない場合にはそのアラート表示
     st.dataframe(med_data[['phName','count_sum','time_per_task']],column_config={'phName':'薬剤師名','count_sum':'総件数','time_per_task':'1件あたりの時間(min)'})
 
@@ -442,7 +442,7 @@ def research_info_chart(filtered_data,combined_data):
         xaxis_title="薬剤師名",
         yaxis_title="件数(件)/1件あたりの時間(min)",
     )
-    st.plotly_chart(fig)
+    st.plotly_chart(fig,key="research_info_chart")
 
     df['time_per_counte'] = (df['size_count']*15) / df['count_sum']
     st.dataframe(df,column_config={'phName':'薬剤師名','count_sum':'総件数','size_count':'記録回数','time_per_counte':'1件あたりの時間(min)'})
@@ -459,3 +459,40 @@ def Jokusou_chart(filtered_data,combined_data):
     st.bar_chart(data=df,x='phName',y='time',x_label='薬剤師名',y_label='総時間(min)')
         
 
+
+def self_task_ratio(filtered_data,combined_data):
+    def _extract_data(df):
+        df = df[['phName','task']]
+        df = df.groupby(['phName','task']).size().reset_index(name='count')
+        total_counts = df.groupby('phName')['count'].sum().reset_index(name='total_count')
+        merged_df = pd.merge(df, total_counts, on='phName')
+        merged_df['task_ratio'] = merged_df['count'] / merged_df['total_count']
+        print(merged_df)
+        return merged_df
+
+    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
+
+    fig = px.bar(
+        df,
+        x='task_ratio',
+        y='phName',
+        color='task',
+        orientation='h',
+        color_discrete_map=TASK_COLOR_MAP,
+        labels={'phName':'薬剤師名','task_ratio':'業務割合','task':'業務内容'},
+            )
+    fig.update_layout(
+        barmode='stack',
+    )
+    st.plotly_chart(fig,key='self_task_ratio_chart')
+
+def comment_data(filtered_data,combined_data):
+    def _extract_data(df):
+        df = df[['phName','comment','time','locate','date']]
+        df = df[df['comment'].notnull() & (df['comment'] !='')]
+        df['locate'] = df['locate'].apply(ast.literal_eval)
+        df['locate'] = df['locate'].apply(lambda x: x[0] if len(x)>0 else 'Unknown')
+        return df
+    
+    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
+    st.dataframe(df,column_config={'phName':'薬剤師名','comment':'コメント','time':'時間','locate':'病棟','date':'日付'})

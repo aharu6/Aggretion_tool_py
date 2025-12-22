@@ -5,6 +5,8 @@ from dtgroupby.groupbytaskcount import GroupByTaskCount
 from resizeDataframe.drawChart import (
     time_per_locate_chart,
     Medication_Guidance_Record_Creation,
+    comment_data,
+    
     Calculate_1on1,
     Calculate_NST,
     Calculate_TDM,
@@ -25,6 +27,9 @@ from resizeDataframe.drawChart import (
     drag_set_check,
     research_info_chart,
     Jokusou_chart,
+
+    self_task_ratio,
+
 )
 
 def View():
@@ -70,19 +75,23 @@ def View():
                 date_range=date_range,locate_select=locate_select,name_select=name_select)
             st.subheader("各タスクの合計時間")
             total_time_per_task(filtered_data,combined_data)
+            
             st.subheader("病棟ごとの集計")
             componentChart_location(filtered_data,combined_data)
             st.subheader("病棟ごとに記録された時間の合計")#TODO:locateごとに作成する
             time_per_locate_chart(filtered_data,combined_data)
 
-            st.subheader("個人ごとの集計")
             st.subheader("総件数と件数あたりの時間")
             st.subheader("業務内容ごとの件数")
             st.subheader("業務内容ごとの場所")
             st.subheader("時間帯ごとに業務が記録された回数")
             st.subheader("その他コメント")
-            st.subheader("個人ごとの総時間数")
-            st.subheader("個人ごとの時間数・件数・1件あたりの時間・平均値")
+            comment_data(filtered_data,combined_data)
+            st.subheader("個人ごとの集計")
+            st.markdown("業務割合")
+            self_task_ratio(filtered_data,combined_data)
+            st.markdown("時間・件数・1件あたりの時間・平均値")
+
 
 
 
