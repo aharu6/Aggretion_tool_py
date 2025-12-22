@@ -20,6 +20,7 @@ from resizeDataframe.drawChart import (
     total_time_per_task,
     componentChart_location,
 
+    Check_Medication,
     Recept_Agent_Modification,
     clean_preparation,
     drag_set_check,
@@ -132,9 +133,10 @@ def View():
             Calculate_nurse_consultation(filtered_data,combined_data)
             st.markdown("管理業務")#TODO:個人ごとの総時間グラフ
             st.markdown("業務調整")#TODO:個人ごとの総時間グラフ
-            st.markdown("事前準備")#個人ごとの総時間グラフ
-            st.markdown("持参薬を確認")#件数、総時間、１けんあたりの時間、グラフ描画必要
-            st.markdown("処方代理修正")#TODO:件数、総時間、１けんあたりの時間、グラフ描画
+            st.markdown("事前準備")#TODO:個人ごとの総時間グラフ
+            st.markdown("持参薬を確認")#TODO:件数、総時間、１けんあたりの時間、グラフ描画必要
+            Check_Medication(filtered_data,combined_data)
+            st.markdown("処方代理修正")#件数、総時間、１けんあたりの時間、グラフ描画
             Recept_Agent_Modification(filtered_data,combined_data)
             st.markdown("服薬指導+記録作成")
             Medication_Guidance_Record_Creation(filtered_data,combined_data)#グラフとデータフレーム
