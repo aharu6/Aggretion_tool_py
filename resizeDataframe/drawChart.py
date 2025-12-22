@@ -172,6 +172,39 @@ def time_per_locate_chart(filtered_data,combined_data):
     df=_extract_locate_data(filtered_data if filtered_data is not None else combined_data)
     st.bar_chart(data=df,x="locate",y="time")
 
+def Recept_Agent_Modification(filtered_data,combined_data): #件数、総時間、１けんあたりの時間、グラフ描画
+    def _extract_data(df):
+        df = df[['phName','count','task']]
+        df = df[df['task'] =='処方代理修正']
+        df['time'] = 15 * df['count']
+        df = df.groupby(['phName','task']).agg(
+            count_sum=('count','sum'),
+            total_time=('time','sum')
+        ).reset_index()
+        
+        df['time_per_task'] = df['total_time'] / df['count_sum']
+        return df
+    df=_extract_data(filtered_data if filtered_data is not None else combined_data)
+    fig = go.Figure(
+        data = [
+            go.Bar(
+                name="件数(件)",
+                x=df['phName'],
+                y=df['count_sum']
+            ),
+            go.Bar(
+                name="1件あたりの時間(分)",
+                x=df['phName'],
+                y=df['time_per_task']
+            )
+        ]
+    )
+    fig.update_layout(
+        xaxis_title="薬剤師名",
+        yaxis_title="件数(件)/1件あたりの時間(分)",
+    )
+    st.plotly_chart(fig)
+
 def Medication_Guidance_Record_Creation(filtered_data,combined_data):
     def _extract_data(df):
         med_data = df[['phName','count','task']]
