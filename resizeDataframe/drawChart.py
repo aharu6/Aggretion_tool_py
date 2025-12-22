@@ -172,6 +172,20 @@ def time_per_locate_chart(filtered_data,combined_data):
     df=_extract_locate_data(filtered_data if filtered_data is not None else combined_data)
     st.bar_chart(data=df,x="locate",y="time")
 
+
+def Manegment_time(filtered_data,combined_data):
+    def _extract_data(df):
+        df = df[['phName','task']]
+        df = df[df['task']=="管理業務"]
+        df = df.groupby('phName').size().reset_index(name = "task_count")
+        df['total_time'] =df['task_count']*15
+        df['total_time'] = df['total_time']/60
+        return df
+    
+    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
+    st.bar_chart(data=df,x='phName',y='total_time',x_label="薬剤師名",y_label="時間(hr)")
+
+
 def Adjustment_work(filtered_data,combined_data):
     def _extract_data(df):
         df = df[['phName',"task"]]
@@ -182,7 +196,7 @@ def Adjustment_work(filtered_data,combined_data):
         return df
     
     df = _extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.bar_chart(data=df,x='phName',y='total_time',x_label="薬剤師名",y_label="総時間(hr)")
+    st.bar_chart(data=df,x='phName',y='total_time',x_label="薬剤師名",y_label="時間(hr)")
 
 def Check_Medication(filtered_data,combined_data):
     def _extract_data(df):
