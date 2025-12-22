@@ -3,8 +3,6 @@ from widgets.folder_selector import FolderSelector
 from widgets.join_files import JoinFiles
 from dtgroupby.groupbytaskcount import GroupByTaskCount
 from resizeDataframe.drawChart import (
-    time_per_task_chart,
-    counts_per_task_chart,
     time_per_locate_chart,
     Medication_Guidance_Record_Creation,
     Calculate_1on1,
@@ -19,7 +17,6 @@ from resizeDataframe.drawChart import (
     Calculate_nurse_consultation,
     total_time_per_task,
     componentChart_location,
-
     Manegment_time,
     Adjustment_work,
     Check_Medication,
@@ -75,6 +72,9 @@ def View():
             total_time_per_task(filtered_data,combined_data)
             st.subheader("病棟ごとの集計")
             componentChart_location(filtered_data,combined_data)
+            st.subheader("病棟ごとに記録された時間の合計")#TODO:locateごとに作成する
+            time_per_locate_chart(filtered_data,combined_data)
+
             st.subheader("個人ごとの集計")
             st.subheader("総件数と件数あたりの時間")
             st.subheader("業務内容ごとの件数")
@@ -98,26 +98,15 @@ def View():
             else:
                 st.sidebar.dataframe(combined_data.head(10))    
             
-            #barchart
-            st.subheader("記録された時間")
-            st.markdown("barchart")
-            time_per_task_chart(filtered_data,combined_data)
-            #plotly_chart
-            st.markdown("plotly")
             
-            st.subheader("件数の合計")
-            counts_per_task_chart(filtered_data,combined_data)
 
-            st.subheader("病棟別の業務割合表示")
-            st.subheader("病棟ごとに記録された時間の合計")#TODO:locateごとに作成する
-            time_per_locate_chart(filtered_data,combined_data)
+            
 
-            #TODO: taskごとに作成する
             st.markdown("1on1")
             Calculate_1on1(filtered_data,combined_data)
             st.markdown("NST")
             Calculate_NST(filtered_data,combined_data)
-            st.markdown("TDM")
+            st.markdown("TDM実施")
             Calculate_TDM(filtered_data,combined_data)
             st.markdown("TPN評価")
             Calculate_TPN(filtered_data,combined_data)
