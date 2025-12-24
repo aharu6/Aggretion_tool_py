@@ -565,3 +565,34 @@ def task_per_location(filtered_data,combined_data):
         yaxis_title="記録回数",
     )
     st.plotly_chart(fig,key="task_per_location_chart")
+
+def count_task(filtered_data,combined_data):
+    def _extract_data(df):
+        df = df[['task','count']]
+        df = df.groupby(['task','count']).agg(
+            total_count = ('count','sum'),
+            record_count = ('task','size')
+        ).reset_index()
+        df['time'] = df['record_count']*15
+        df['time_per_count'] = df['time'] / df['total_count']
+        return df
+    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
+    fig = go.Figure(
+        data=[
+            go.Bar(
+                name="件数(件)",
+                x=df['task'],
+                y=df['total_count']
+            ),
+            go.Bar(
+                name="1件あたりの時間(min)",
+                x=df['task'],
+                y=df['time_per_count']
+            )
+        ]
+    )
+    fig.update_layout(
+        xaxis_title="業務内容",
+        yaxis_title="件数(件)/1件あたりの時間(min)",
+    )
+    st.plotly_chart(fig,key="count_task_chart") 
