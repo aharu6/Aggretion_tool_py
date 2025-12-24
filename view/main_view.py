@@ -8,6 +8,7 @@ from resizeDataframe.drawChart import (
     count_task,
     task_per_location,
     task_heatmap,
+    time_count_avg,
     comment_data,
 
     Calculate_1on1,
@@ -53,7 +54,7 @@ def View():
         st.session_state.prev_slider = None
     
     #TODO ファイル読み込み中のプログレスバーを表示、中に読み込んだデータを元に集計項目を作成する旨を記載
-    slider = st.sidebar.pills("表示モード",options=["概要","業務別分析"])
+    slider = st.sidebar.pills("表示モード",options=["概要","病棟別分析","業務別分析"])
 
     if st.session_state.prev_slider != slider:
         #前の選択をクリア
@@ -78,16 +79,8 @@ def View():
                 date_range=date_range,locate_select=locate_select,name_select=name_select)
             st.subheader("各タスクの合計時間")
             total_time_per_task(filtered_data,combined_data)
-            
-            st.subheader("病棟ごとの集計")
-            componentChart_location(filtered_data,combined_data)
-            st.markdown("時間の合計")#TODO:locateごとに作成する
-            time_per_locate_chart(filtered_data,combined_data)
-
             st.markdown("業務内容ごとの件数と1件あたりの時間")
             count_task(filtered_data,combined_data)
-            st.markdown("記録された業務内容と回数")
-            task_per_location(filtered_data,combined_data)            
             st.subheader("時間帯ごとに業務が記録された回数")
             task_heatmap(filtered_data,combined_data)
             st.subheader("その他コメント")
@@ -97,9 +90,27 @@ def View():
             st.markdown("業務割合")
             self_task_ratio(filtered_data,combined_data)
             st.markdown("時間・件数・1件あたりの時間・平均値")
+            time_count_avg(filtered_data,combined_data)
 
+        elif slider == "病棟別分析":
 
+            #日付以外に病棟名や個人名で絞り込みを行う
+            locate_select =st.sidebar.multiselect(label="病棟の絞り込み",options=combined_data['locate'].unique())
+            name_select = st.sidebar.multiselect(label="個人名の選択",options=combined_data["phName"].unique())
 
+            st.sidebar.markdown("期間選択")
+            date_range = st.sidebar.date_input("日付範囲を選択してください",[])
+            #task_記録された回数
+            #名前や期間で絞り込みあれば反映する
+            filtered_data=GroupByTaskCount(combined_data).group_by_task_count(
+                date_range=date_range,locate_select=locate_select,name_select=name_select)
+            
+            st.subheader("病棟ごとの集計")
+            componentChart_location(filtered_data,combined_data)
+            st.markdown("時間の合計")#locateごとに作成する
+            time_per_locate_chart(filtered_data,combined_data)
+            st.markdown("記録された業務内容と総時間")
+            task_per_location(filtered_data,combined_data)            
 
         elif slider == "業務別分析":
             st.sidebar.markdown("期間選択")
@@ -112,9 +123,6 @@ def View():
                 st.sidebar.dataframe(filtered_data.head(10))
             else:
                 st.sidebar.dataframe(combined_data.head(10))    
-            
-            
-
             
 
             st.markdown("1on1")

@@ -546,6 +546,8 @@ def task_per_location(filtered_data,combined_data):
         df['locate'] = df['locate'].apply(ast.literal_eval)
         df['locate'] = df['locate'].apply(lambda x: x[0] if len(x)>0 else 'Unknown')
         df = df.groupby(['locate','task']).size().reset_index(name='count')
+        df['time'] = df['count']*15
+        df['time'] = df['time']/60
         return df
     
     df = _extract_data(filtered_data if filtered_data is not None else combined_data)
@@ -553,16 +555,16 @@ def task_per_location(filtered_data,combined_data):
     fig = px.bar(
         data_frame=df,
         x = 'locate',
-        y = 'count',
+        y = 'time',
         color= 'task',
-        labels={'locate':'病棟','count':'記録回数','task':'業務内容'},
+        labels={'locate':'病棟','time':'総時間(hr)','task':'業務内容'},
         color_discrete_map=TASK_COLOR_MAP,
         barmode='stack',
-        hover_data={'task':True,'count':True,'locate':True}
+        hover_data={'task':True,'time':True,'locate':True}
     )
     fig.update_layout(
         xaxis_title="病棟",
-        yaxis_title="記録回数",
+        yaxis_title="総時間(hr)",
     )
     st.plotly_chart(fig,key="task_per_location_chart")
 
@@ -596,3 +598,35 @@ def count_task(filtered_data,combined_data):
         yaxis_title="件数(件)/1件あたりの時間(min)",
     )
     st.plotly_chart(fig,key="count_task_chart") 
+
+def time_count_avg(filtered_data,combined_data):
+    def _extract_data(df):#時間・件数・1件あたりの時間・平均値
+        df = df[['phName','task','count']]
+        df = df.groupby(['phName','task']).agg(
+            total_count = ('count','sum'),
+            record_count = ('task','size')
+        ).reset_index()
+        df['total_time'] = df['record_count']*15
+        df['time_per_count'] = df['total_time'] / df['total_count']
+        return df
+    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
+    #record_countは不要なので削除
+    df = df[['phName','task','total_count','total_time','time_per_count']]
+    st.dataframe(df,column_config={'phName':'薬剤師名','task':'業務内容','total_count':'総件数','total_time':'総時間(min)','time_per_count':'1件あたりの時間(min)'})    
+
+    #平均値dfを追加
+    avg_df = df.groupby('task').agg(
+        avg_total_count = ('total_count','mean'),
+        avg_total_time = ('total_time','mean'),
+        avg_time_per_count = ('time_per_count','mean')
+    ).reset_index()
+    avg_df = avg_df[['task','avg_total_count','avg_total_time','avg_time_per_count']]
+    avg_df = avg_df.rename(columns={
+        'avg_total_count':'total_count',
+        'avg_total_time':'total_time',
+        'avg_time_per_count':'time_per_count'
+    })
+    #phName列は不要なので削除
+    avg_df = avg_df[['task','total_count','total_time','time_per_count']]
+    st.markdown("業務別平均値")
+    st.dataframe(avg_df,column_config={'task':'業務内容','total_count':'総件数','total_time':'総時間(min)','time_per_count':'1件あたりの時間(min)'})
