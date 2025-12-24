@@ -219,14 +219,30 @@ def Calculate_nurse_consultation(filtered_data,combined_data):
 import ast
 def time_per_locate_chart(filtered_data,combined_data):
     def _extract_locate_data(df):
-        locate_data = df[['locate']].groupby('locate').size().reset_index(name='time')
-        locate_data['time'] = locate_data['time']*15
-        locate_data['locate']= locate_data['locate'].apply(ast.literal_eval)
-        locate_data['locate'] = locate_data['locate'].apply(lambda x: x[0] if len(x)>0 else 'Unknown')
-        return locate_data
+        df = df[['locate']].copy()
+        df = df[df['locate'].notnull()]
+        print(f"locate not null: {len(df)}")
+        df['locate']= df['locate'].apply(ast.literal_eval)
+        df['locate'] = df['locate'].apply(lambda x: x[0] if len(x)>0 else 'Unknown')
+        df = df[df['locate'] != 'Unknown']
+        df = df.groupby('locate').size().reset_index(name='time')
+        print(df)
+        df['time'] = df['time']*15
+        df['time'] = df['time']/60
+        return df
     
     df=_extract_locate_data(filtered_data if filtered_data is not None else combined_data)
-    st.bar_chart(data=df,x="locate",y="time")
+    fig =px.bar(
+        data_frame=df,
+        x='locate',
+        y='time',
+        labels={'locate':'病棟','time':'総時間(hr)'}
+    )
+    fig.update_layout(
+        xaxis_title="病棟",
+        yaxis_title="総時間(hr)",
+    )
+    st.plotly_chart(fig,key="time_per_locate_chart")
 
 
 def Manegment_time(filtered_data,combined_data):
@@ -467,7 +483,6 @@ def self_task_ratio(filtered_data,combined_data):
         total_counts = df.groupby('phName')['count'].sum().reset_index(name='total_count')
         merged_df = pd.merge(df, total_counts, on='phName')
         merged_df['task_ratio'] = merged_df['count'] / merged_df['total_count']
-        print(merged_df)
         return merged_df
 
     df = _extract_data(filtered_data if filtered_data is not None else combined_data)
@@ -496,3 +511,57 @@ def comment_data(filtered_data,combined_data):
     
     df = _extract_data(filtered_data if filtered_data is not None else combined_data)
     st.dataframe(df,column_config={'phName':'薬剤師名','comment':'コメント','time':'時間','locate':'病棟','date':'日付'})
+
+
+def task_heatmap(filtered_data,combined_data):
+    def _extract_data(df):
+        df = df[['phName','time','task']]
+        df = df.groupby(['task','time']).size().reset_index(name = "count")
+        df['sort_time'] = df["time"].astype(str).fillna("")
+        df["sort_time"]=df["sort_time"].str.strip().str.split(" ").str[0]
+        df["sort_time"]=pd.to_datetime(df["sort_time"],format="%H:%M",errors="coerce")
+        df.sort_values("sort_time")
+        return df
+    
+    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
+    
+    fig = px.density_heatmap(
+        data_frame=df,
+        x="time",
+        y="task",
+        z="count",
+        labels={'time':'時間','task':'業務内容','count':'記録回数'}
+    )
+    fig.update_layout(
+        xaxis_title="時間",
+        yaxis_title="業務内容",
+    )
+    st.plotly_chart(fig,key="task_heatmap_chart")
+
+
+def task_per_location(filtered_data,combined_data):
+    def _extract_data(df):
+        df = df[['locate','task']]
+        df = df[df['locate'].notnull()]
+        df['locate'] = df['locate'].apply(ast.literal_eval)
+        df['locate'] = df['locate'].apply(lambda x: x[0] if len(x)>0 else 'Unknown')
+        df = df.groupby(['locate','task']).size().reset_index(name='count')
+        return df
+    
+    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
+
+    fig = px.bar(
+        data_frame=df,
+        x = 'locate',
+        y = 'count',
+        color= 'task',
+        labels={'locate':'病棟','count':'記録回数','task':'業務内容'},
+        color_discrete_map=TASK_COLOR_MAP,
+        barmode='stack',
+        hover_data={'task':True,'count':True,'locate':True}
+    )
+    fig.update_layout(
+        xaxis_title="病棟",
+        yaxis_title="記録回数",
+    )
+    st.plotly_chart(fig,key="task_per_location_chart")

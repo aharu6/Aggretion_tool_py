@@ -38,14 +38,9 @@ class JoinFiles:
                 if hasattr(file,"read"):
                     content = StringIO(safe_decode(file.getvalue()))
                     df = pd.read_csv(content) 
-                    cleaned_df = cleaning_df(df)
-                    if cleaned_df is not None:
-                        df = cleaned_df
                 else:
                     df = pd.read_csv(file)
-                    cleaned_df = cleaning_df(df)
-                    if cleaned_df is not None:
-                        df = cleaned_df
+                    
 
                 df["date"] = pd.to_datetime(date_part.group(0), format="%Y-%m-%d")
                 return df
