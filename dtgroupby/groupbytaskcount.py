@@ -4,13 +4,13 @@ class GroupByTaskCount:
     def __init__(self, dataframe):
         self.dataframe = dataframe
 
-    def group_by_task_count(self, locate_select=None, name_select=None, date_range=None):
+    def group_by_task_count(self, locate_select, name_select, date_range):
         df = self.dataframe
-
+        print(df['locate'])
         conditions = []
         if locate_select:
-            df = df[df['locate'].isin(locate_select)]
-        
+            df = df[df['locate'].apply(lambda x:any(loc in x for loc in locate_select))]
+
         if name_select:
             df = df[df['phName'].isin(name_select)]
 

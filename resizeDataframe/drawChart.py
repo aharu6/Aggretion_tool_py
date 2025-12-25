@@ -221,12 +221,10 @@ def time_per_locate_chart(filtered_data,combined_data):
     def _extract_locate_data(df):
         df = df[['locate']].copy()
         df = df[df['locate'].notnull()]
-        print(f"locate not null: {len(df)}")
         df['locate']= df['locate'].apply(ast.literal_eval)
         df['locate'] = df['locate'].apply(lambda x: x[0] if len(x)>0 else 'Unknown')
         df = df[df['locate'] != 'Unknown']
         df = df.groupby('locate').size().reset_index(name='time')
-        print(df)
         df['time'] = df['time']*15
         df['time'] = df['time']/60
         return df

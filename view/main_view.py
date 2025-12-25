@@ -1,5 +1,4 @@
 import streamlit as st
-from widgets.folder_selector import FolderSelector
 from widgets.join_files import JoinFiles
 from dtgroupby.groupbytaskcount import GroupByTaskCount
 from resizeDataframe.drawChart import (
@@ -35,6 +34,23 @@ from resizeDataframe.drawChart import (
     self_task_ratio,
 
 )
+import ast
+
+#ユニークな病棟名の抽出
+def extract_unique_locations(dataframe):
+    if 'locate' not in dataframe.columns:
+        return []
+    df = dataframe.copy()
+    df = df[df['locate'].notnull()]
+    df['locate'] = df['locate'].apply(ast.literal_eval)
+    df['locate'] = df['locate'].apply(lambda x: x[0] if len(x)>0 else '')
+    df = df[['locate']].drop_duplicates().reset_index(drop=True)
+    return df['locate'].tolist()
+
+import hashlib
+import pandas as pd
+def get_dataframe_hash(df):
+    return hashlib.md5(pd.util.hash_pandas_object(df,index=True).values).hexdigest()
 
 def View():
     st.title("日誌集計ツール")
@@ -65,11 +81,22 @@ def View():
         st.session_state.prev_slider = slider
         st.rerun()
 
+
+
     if combined_data is not None:
+        #ハッシュ値で変更を検知、変更ある場合のみ。select_locate_listを更新
+        current_hash = get_dataframe_hash(combined_data)
+        if 'combined_data_hash' not in st.session_state:
+            st.session_state.select_locate_list = extract_unique_locations(combined_data)
+            st.session_state.combined_data_hash = current_hash
+
+        select_locate_list = st.session_state.select_locate_list
+
         if slider == "概要":
             #日付以外に病棟名や個人名で絞り込みを行う
-            locate_select =st.sidebar.multiselect(label="病棟の絞り込み",options=combined_data['locate'].unique())
-            name_select = st.sidebar.multiselect(label="個人名の選択",options=combined_data["phName"].unique())
+            locate_select =st.sidebar.multiselect(label="病棟の絞り込み",options=select_locate_list,key='locate_select')
+            name_select = st.sidebar.multiselect(label="個人名の選択",options=combined_data["phName"].unique(),key='name_select')
+
 
             st.sidebar.markdown("期間選択")
             date_range = st.sidebar.date_input("日付範囲を選択してください",[])
@@ -93,9 +120,8 @@ def View():
             time_count_avg(filtered_data,combined_data)
 
         elif slider == "病棟別分析":
-
             #日付以外に病棟名や個人名で絞り込みを行う
-            locate_select =st.sidebar.multiselect(label="病棟の絞り込み",options=combined_data['locate'].unique())
+            locate_select =st.sidebar.multiselect(label="病棟の絞り込み",options=select_locate_list)
             name_select = st.sidebar.multiselect(label="個人名の選択",options=combined_data["phName"].unique())
 
             st.sidebar.markdown("期間選択")
