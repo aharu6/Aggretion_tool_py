@@ -1,5 +1,4 @@
 import streamlit as st
-from widgets.folder_selector import FolderSelector
 from widgets.join_files import JoinFiles
 from dtgroupby.groupbytaskcount import GroupByTaskCount
 from resizeDataframe.drawChart import (
@@ -80,7 +79,7 @@ def View():
         if 'name_select' in st.session_state:
             del st.session_state['name_select']
         st.session_state.prev_slider = slider
-
+        st.rerun()
 
 
 
@@ -95,13 +94,8 @@ def View():
 
         if slider == "概要":
             #日付以外に病棟名や個人名で絞り込みを行う
-            print(f"select_locate_list: {select_locate_list}")
-            locate_select =st.sidebar.multiselect(label="病棟の絞り込み",options=select_locate_list)
-            name_select = st.sidebar.multiselect(label="個人名の選択",options=combined_data["phName"].unique())
-            print(f"name_select: {name_select}")
-            
-            if 'locate_select' not in st.session_state:
-                st.session_state.locate_select = []
+            locate_select =st.sidebar.multiselect(label="病棟の絞り込み",options=select_locate_list,key='locate_select')
+            name_select = st.sidebar.multiselect(label="個人名の選択",options=combined_data["phName"].unique(),key='name_select')
 
 
             st.sidebar.markdown("期間選択")
