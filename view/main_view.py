@@ -85,11 +85,12 @@ def View():
 
 
     if combined_data is not None:
+        #ハッシュ値で変更を検知、変更ある場合のみ。select_locate_listを更新
         current_hash = get_dataframe_hash(combined_data)
         if 'combined_data_hash' not in st.session_state:
             st.session_state.select_locate_list = extract_unique_locations(combined_data)
             st.session_state.combined_data_hash = current_hash
-            
+
         select_locate_list = st.session_state.select_locate_list
 
         if slider == "概要":
