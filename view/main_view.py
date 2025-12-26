@@ -51,11 +51,14 @@ import hashlib
 import pandas as pd
 def get_dataframe_hash(df):
     return hashlib.md5(pd.util.hash_pandas_object(df,index=True).values).hexdigest()
+from config.release_notes import get_release_notes
 
 def View():
     st.title("日誌集計ツール")
     st.markdown("このアプリケーションは複数のCSVファイルを結合し、集計を行うツールです。")
     st.markdown("最初にcsvファイルを含むフォルダをアップロードしてください")
+    with st.expander("リリースノート",expanded=False):
+        st.markdown(get_release_notes())
     combined_data=None
     #フォルダを読み込む
     uploadfiles =st.sidebar.file_uploader(
