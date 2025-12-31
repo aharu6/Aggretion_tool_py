@@ -329,7 +329,7 @@ def Recept_Agent_Modification(filtered_data,combined_data): #件数、総時間�
         yaxis_title="件数(件)/1件あたりの時間(min)",
     )
     st.plotly_chart(fig,key="Recept_Agent_Modification_chart")
-
+#TODO:病棟関係ない業務を排除できるボタンを作成、グラフ表示をきりかえる
 def Medication_Guidance_Record_Creation(filtered_data,combined_data):
     def _extract_data(df):
         med_data = df[['phName','count','task']]
@@ -361,7 +361,13 @@ def Medication_Guidance_Record_Creation(filtered_data,combined_data):
         yaxis_title="件数(件)/1件あたりの時間(min)",
     )
     st.plotly_chart(fig,key="Medication_Guidance_Record_Creation_chart")
-    #TODO:1件あたりの時間が算出できなくて、グラフが描画できない場合にはそのアラート表示
+    if med_data.empty:
+        st.info("該当データが存在しません。")
+        return
+    
+    if (med_data['time_per_task'] == float('inf')).any():
+        st.info("1件あたりの時間が算出できないデータがあります。件数が0の可能性があります。")
+
     st.dataframe(med_data[['phName','count_sum','time_per_task']],column_config={'phName':'薬剤師名','count_sum':'総件数','time_per_task':'1件あたりの時間(min)'})
 
 
