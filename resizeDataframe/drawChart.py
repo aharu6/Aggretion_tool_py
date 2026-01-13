@@ -24,7 +24,8 @@ def         Calculate_1on1(filtered_data,combined_data):
         df['time'] = df['count']*15
         return df
     df=_extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.bar_chart(data=df,x='phName',y='time',y_label='総時間(min)',x_label='薬剤師名')
+    fig = px.bar(data_frame=df,x='phName',y='time',labels={'phName':'薬剤師名','time':'総時間(min)'}  )
+    st.plotly_chart(fig,key="Calculate_1on1_chart")
 
 def Calculate_NST(filtered_data,combined_data):
     def _extract_data(df):
@@ -34,7 +35,8 @@ def Calculate_NST(filtered_data,combined_data):
         df['time'] = df['count']*15
         return df
     df=_extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.bar_chart(data=df,x='phName',y='time',y_label='総時間(min)',x_label='薬剤師名')
+    fig = px.bar(data_frame=df,x='phName',y='time',labels={'phName':'薬剤師名','time':'総時間(min)'})
+    st.plotly_chart(fig,key="Calculate_NST_chart")
 
 def Calculate_TDM(filtered_data,combined_data):
     def _extract_data(df):
@@ -91,7 +93,8 @@ def Calculate_WG(filtered_data,combined_data):
         df['time'] = df['count']*15
         return df
     df=_extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.bar_chart(data=df,x='phName',y='time',y_label='総時間(min)',x_label='薬剤師名')
+    fig = px.bar(data_frame=df,x='phName',y='time',labels={'phName':'薬剤師名','time':'総時間(min)'})
+    st.plotly_chart(fig,key="Calculate_WG_chart")
 
 
 def Calculate_confa(filtered_data,combined_data):
@@ -103,7 +106,8 @@ def Calculate_confa(filtered_data,combined_data):
         df['time'] = df['time']/60
         return df
     df=_extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.bar_chart(data=df,x='phName',y='time',y_label='総時間(hr)',x_label='薬剤師名')
+    fig = px.bar(data_frame=df,x='phName',y='time',labels={'phName':'薬剤師名','time':'総時間(hr)'})
+    st.plotly_chart(fig,key="Calculate_confa_chart")
 
 def Calculate_conference(filtered_data,combined_data):
     def _extract_data(df):
@@ -113,7 +117,8 @@ def Calculate_conference(filtered_data,combined_data):
         df['time'] = df['count']*15
         return df
     df=_extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.bar_chart(data=df,x='phName',y='time',y_label='総時間(min)',x_label='薬剤師名')
+    fig = px.bar(data_frame=df,x='phName',y='time',labels={'phName':'薬剤師名','time':'総時間(min)'})
+    st.plotly_chart(fig,key="Calculate_conference_chart")
 
 
 def Calculate_other_consultation(filtered_data,combined_data):
@@ -253,7 +258,8 @@ def Manegment_time(filtered_data,combined_data):
         return df
     
     df = _extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.bar_chart(data=df,x='phName',y='total_time',x_label="薬剤師名",y_label="時間(hr)")
+    fig = px.bar(data_frame=df,x='phName',y='total_time',labels={'phName':'薬剤師名','total_time':'時間(hr)'})
+    st.plotly_chart(fig,key="Manegment_time_chart")
 
 
 def Adjustment_work(filtered_data,combined_data):
@@ -266,7 +272,8 @@ def Adjustment_work(filtered_data,combined_data):
         return df
     
     df = _extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.bar_chart(data=df,x='phName',y='total_time',x_label="薬剤師名",y_label="時間(hr)")
+    fig = px.bar(data_frame=df,x='phName',y='total_time',labels={'phName':'薬剤師名','total_time':'時間(hr)'})
+    st.plotly_chart(fig,key="Adjustment_work_chart")
 
 def Check_Medication(filtered_data,combined_data):
     def _extract_data(df):
@@ -329,6 +336,7 @@ def Recept_Agent_Modification(filtered_data,combined_data): #件数、総時間�
         yaxis_title="件数(件)/1件あたりの時間(min)",
     )
     st.plotly_chart(fig,key="Recept_Agent_Modification_chart")
+    
 #TODO:病棟関係ない業務を排除できるボタンを作成、グラフ表示をきりかえる
 def Medication_Guidance_Record_Creation(filtered_data,combined_data):
     def _extract_data(df):
@@ -381,7 +389,8 @@ def total_time_per_task(filtered_data,combined_data):
     
     df=_extract_data(filtered_data if filtered_data is not None else combined_data)
     try:
-        st.bar_chart(df,y='times',x='task',y_label='総時間(hr)',x_label='業務名')
+        fig = px.bar(data_frame=df,x='task',y='times',labels={'task':'業務名','times':'総時間(hr)'})    
+        st.plotly_chart(fig,key="total_time_per_task_chart")
     except:
         pass
 
@@ -410,6 +419,8 @@ def componentChart_location(filtered_data,combined_data):
     except Exception as e:
         st.warning(f"チャートの作成中にエラーが発生しました: {e}")
 
+    #TODO:データが存在しない場合はst.infoで通知
+
 def clean_preparation(filtered_data,combined_data):
     def _extract_data(df):
         df = df[['phName','task']]
@@ -418,7 +429,8 @@ def clean_preparation(filtered_data,combined_data):
         df['time'] = df['count_sum']*15
         return df
     df = _extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.bar_chart(data=df,x='phName',y='time',x_label='薬剤師名',y_label='総時間(min)')
+    fig = px.bar(data_frame=df,x='phName',y='time',labels={'phName':'薬剤師名','time':'総時間(min)'})
+    st.plotly_chart(fig,key="clean_preparation_chart")
 
 def drag_set_check(filtered_data,combined_data):
     def _extract_data(df):
@@ -428,7 +440,8 @@ def drag_set_check(filtered_data,combined_data):
         df['time'] = df['count_sum']*15
         return df
     df = _extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.bar_chart(data=df,x='phName',y='time',x_label='薬剤師名',y_label='総時間(min)')
+    fig=px.bar(data_frame=df,x='phName',y='time',labels={'phName':'薬剤師名','time':'総時間(min)'})
+    st.plotly_chart(fig,key="drag_set_check_chart")
 
 import plotly.graph_objects as go
 
@@ -476,9 +489,9 @@ def Jokusou_chart(filtered_data,combined_data):
         return df
 
     df = _extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.bar_chart(data=df,x='phName',y='time',x_label='薬剤師名',y_label='総時間(min)')
+    fig = px.bar(data_frame=df,x='phName',y='time',labels={'phName':'薬剤師名','time':'総時間(min)'})
+    st.plotly_chart(fig,key="Jokusou_chart")
         
-
 
 def self_task_ratio(filtered_data,combined_data):
     def _extract_data(df):
