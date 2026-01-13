@@ -24,7 +24,7 @@ def         Calculate_1on1(filtered_data,combined_data):
         df['time'] = df['count']*15
         return df
     df=_extract_data(filtered_data if filtered_data is not None else combined_data)
-    fig = px.bar(data_frame=df,x='phName',y='time',labels={'phName':'薬剤師名','time':'総時間(min)'}  )
+    fig = px.bar(data_frame=df,x='phName',y='time',labels={'phName':'薬剤師名','time':'総時間(min)'})
     st.plotly_chart(fig,key="Calculate_1on1_chart")
 
 def Calculate_NST(filtered_data,combined_data):
@@ -389,7 +389,7 @@ def total_time_per_task(filtered_data,combined_data):
     
     df=_extract_data(filtered_data if filtered_data is not None else combined_data)
     try:
-        fig = px.bar(data_frame=df,x='task',y='times',labels={'task':'業務名','times':'総時間(hr)'})    
+        fig = px.bar(data_frame=df,x='task',y='times',labels={'task':'業務名','times':'総時間(hr)'})
         st.plotly_chart(fig,key="total_time_per_task_chart")
     except:
         pass
@@ -440,7 +440,7 @@ def drag_set_check(filtered_data,combined_data):
         df['time'] = df['count_sum']*15
         return df
     df = _extract_data(filtered_data if filtered_data is not None else combined_data)
-    fig=px.bar(data_frame=df,x='phName',y='time',labels={'phName':'薬剤師名','time':'総時間(min)'})
+    fig = px.bar(data_frame=df,x='phName',y='time',labels={'phName':'薬剤師名','time':'総時間(min)'})
     st.plotly_chart(fig,key="drag_set_check_chart")
 
 import plotly.graph_objects as go
