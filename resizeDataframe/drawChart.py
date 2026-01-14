@@ -1,6 +1,9 @@
 import streamlit as st
 from view.TASK_COLOR_MAP import TASK_COLOR_MAP
 import plotly.express as px
+import plotly.graph_objects as go
+import pandas as pd
+import ast
 def _get_data(filtered_data,combined_data):
     return filtered_data if filtered_data is not None else combined_data
 
@@ -83,7 +86,9 @@ def Calculate_TPN(filtered_data,combined_data):
         df['time_per_count'] = df['time'] / df['count_sum']
         return df
     df=_extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.dataframe(df)
+    st.dataframe(df,column_config={
+        'phName':'薬剤師名','count_sum':'総件数','size_count':'記録回数',
+        'time':'総時間(min)','time_per_count':'1件あたりの時間(min)'})
 
 def Calculate_WG(filtered_data,combined_data):
     def _extract_data(df):
@@ -93,7 +98,7 @@ def Calculate_WG(filtered_data,combined_data):
         df['time'] = df['count']*15
         return df
     df=_extract_data(filtered_data if filtered_data is not None else combined_data)
-    fig = px.bar(data_frame=df,x='phName',y='time',labels={'phName':'薬剤師名','time':'総時間(min)'})
+    fig = px.bar(data_frame=df,x='phName',y='time',labels={'phName':'薬剤師名','time':'総時間(min)'},)
     st.plotly_chart(fig,key="Calculate_WG_chart")
 
 
@@ -478,7 +483,10 @@ def research_info_chart(filtered_data,combined_data):
     st.plotly_chart(fig,key="research_info_chart")
 
     df['time_per_counte'] = (df['size_count']*15) / df['count_sum']
-    st.dataframe(df,column_config={'phName':'薬剤師名','count_sum':'総件数','size_count':'記録回数','time_per_counte':'1件あたりの時間(min)'})
+    st.dataframe(df,column_config={
+        'phName':'薬剤師名','count_sum':'総件数','size_count':'記録回数','time_per_count':'1件あたりの時間(min)',
+        'time':'総時間(min)'
+        })
 
 def Jokusou_chart(filtered_data,combined_data):
     def _extract_data(df):
@@ -647,3 +655,343 @@ def time_count_avg(filtered_data,combined_data):
     avg_df = avg_df[['task','total_count','total_time','time_per_count']]
     st.markdown("業務別平均値")
     st.dataframe(avg_df,column_config={'task':'業務内容','total_count':'総件数','total_time':'総時間(min)','time_per_count':'1件あたりの時間(min)'})
+
+
+def collect_all_charts_data(filtered_data, combined_data):
+    """
+    全てのグラフとデータフレームを収集する関数
+    
+    Returns:
+        list: [{'name': str, 'fig': plotly.Figure, 'df': pd.DataFrame}, ...]
+    """
+    results = []
+    
+    PLOTLY_COLORS = [
+        '#2B66C2',"#93C7FA"
+    ]
+    
+    # 各関数からデータを抽出（表示はせずにデータのみ取得）
+    def get_1on1_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName','task']]
+        df = df[df['task']=='1on1']
+        df = df.groupby('phName').size().reset_index(name='count')
+        df['time'] = df['count']*15
+        fig = px.bar(data_frame=df, x='phName', y='time', 
+                    labels={'phName':'薬剤師名','time':'総時間(min)'},
+                    color_discrete_sequence=[PLOTLY_COLORS[0]])
+        return fig, df
+    
+    def get_nst_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName','task']]
+        df = df[df['task']=='NST']
+        df = df.groupby('phName').size().reset_index(name='count')
+        df['time'] = df['count']*15
+        fig = px.bar(data_frame=df, x='phName', y='time', 
+                    labels={'phName':'薬剤師名','time':'総時間(min)'},color_discrete_sequence=[PLOTLY_COLORS[0]])
+        return fig, df
+    
+    def get_tdm_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName','task',"count"]]
+        df = df[df['task']=='TDM実施']
+        df = df.groupby(['phName','task']).agg(
+            count_sum =('count','sum'),
+            size_count =('task','size')
+        ).reset_index()
+        df['time'] = df['size_count']*15
+        df['time_per_count'] = df['time'] / df['count_sum']
+        fig = go.Figure(
+            data=[
+                go.Bar(name="件数(件)", x=df['phName'], y=df['count_sum'],
+                    marker=dict(color=PLOTLY_COLORS[0])),
+                go.Bar(name="1件あたりの時間(min)", x=df['phName'], y=df['time_per_count'],
+                    marker=dict(color=PLOTLY_COLORS[1]))
+            ]
+        )
+        fig.update_layout(xaxis_title="薬剤師名", yaxis_title="件数(件)/1件あたりの時間(min)")
+        return fig, df
+    
+    def get_tpn_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName','task',"count"]]
+        df = df[df['task']=='TPN評価']
+        df = df.groupby(['phName','task']).agg(
+            count_sum =('count','sum'),
+            size_count =('task','size')
+        ).reset_index()
+        df['time'] = df['size_count']*15
+        df['time_per_count'] = df['time'] / df['count_sum']
+        return None, df  # TPNはグラフがないのでNone
+    
+    def get_wg_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName','task']]
+        df = df[df['task']=='WG活動']
+        df = df.groupby('phName').size().reset_index(name='count')
+        df['time'] = df['count']*15
+        fig = px.bar(data_frame=df, x='phName', y='time', 
+                    labels={'phName':'薬剤師名','time':'総時間(min)'},
+                    color_discrete_sequence=[PLOTLY_COLORS[0]])
+        return fig, df
+    
+    def get_confa_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName','task']]
+        df = df[df['task']=='カンファ・ラウンド']
+        df = df.groupby('phName').size().reset_index(name='count')
+        df['time'] = df['count']*15
+        df['time'] = df['time']/60
+        fig = px.bar(data_frame=df, x='phName', y='time', 
+                    labels={'phName':'薬剤師名','time':'総時間(hr)'},
+                    color_discrete_sequence=[PLOTLY_COLORS[0]])
+        return fig, df
+    
+    def get_conference_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName','task']]
+        df = df[df['task']=='カンファレンス']
+        df = df.groupby('phName').size().reset_index(name='count')
+        df['time'] = df['count']*15
+        fig = px.bar(data_frame=df, x='phName', y='time', 
+                    labels={'phName':'薬剤師名','time':'総時間(min)'},
+                    color_discrete_sequence=[PLOTLY_COLORS[0]])
+        return fig, df
+    
+    def get_other_consultation_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName','task','count']]
+        df = df[df['task']=='その他の職種からの相談']
+        df = df.groupby(['phName','task']).agg(
+            count_sum =('count','sum'),
+            size_count =('task','size')
+        ).reset_index()
+        df['time'] = df['size_count']*15
+        df['time_per_count'] = df['time'] / df['count_sum']
+        fig = go.Figure(
+            data=[
+                go.Bar(name="件数(件)", x=df['phName'], y=df['count_sum'],
+                    marker=dict(color=PLOTLY_COLORS[0])),
+                go.Bar(name="1件あたりの時間(min)", x=df['phName'], y=df['time_per_count'],
+                    marker=dict(color=PLOTLY_COLORS[1]))
+            ],
+        )
+        fig.update_layout(xaxis_title="薬剤師名", yaxis_title="件数(件)/1件あたりの時間(min)")
+        return fig, df
+    
+    def get_doctor_consultation_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName','task','count']]
+        df = df[df['task']=='医師からの相談']
+        df = df.groupby(['phName','task']).agg(
+            count_sum =('count','sum'),
+            size_count =('task','size')
+        ).reset_index()
+        df['time'] = df['size_count']*15
+        df['time_per_count'] = df['time'] / df['count_sum']
+        fig = go.Figure(
+            data=[
+                go.Bar(name="件数(件)", x=df['phName'], y=df['count_sum'],
+                    marker=dict(color=PLOTLY_COLORS[0])),
+                go.Bar(name="1件あたりの時間(min)", x=df['phName'], y=df['time_per_count'],
+                    marker=dict(color=PLOTLY_COLORS[1]))
+            ]
+        )
+        fig.update_layout(xaxis_title="薬剤師名", yaxis_title="件数(件)/1件あたりの時間(min)")
+        return fig, df
+    
+    def get_nurse_consultation_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName','task','count']]
+        df = df[df['task']=='看護師からの相談']
+        df = df.groupby(['phName','task']).agg(
+            count_sum =('count','sum'),
+            size_count =('task','size')
+        ).reset_index()
+        df['time'] = df['size_count']*15
+        df['time_per_count'] = df['time'] / df['count_sum']
+        fig = go.Figure(
+            data=[
+                go.Bar(name="件数(件)", x=df['phName'], y=df['count_sum'],
+                    marker=dict(color=PLOTLY_COLORS[0])),
+                go.Bar(name="1件あたりの時間(min)", x=df['phName'], y=df['time_per_count'],
+                    marker=dict(color=PLOTLY_COLORS[1]))
+            ]
+        )
+        fig.update_layout(xaxis_title="薬剤師名", yaxis_title="件数(件)/1件あたりの時間(min)")
+        return fig, df
+    
+    def get_management_time_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName','task']]
+        df = df[df['task']=="管理業務"]
+        df = df.groupby('phName').size().reset_index(name = "task_count")
+        df['total_time'] =df['task_count']*15
+        df['total_time'] = df['total_time']/60
+        fig = px.bar(data_frame=df, x='phName', y='total_time', 
+                    labels={'phName':'薬剤師名','total_time':'時間(hr)'},
+                    color_discrete_sequence=[PLOTLY_COLORS[0]])
+        return fig, df
+    
+    def get_adjustment_work_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName',"task"]]
+        df = df[df['task'] =="業務調整"]
+        df = df.groupby('phName').size().reset_index(name = "task_count")
+        df['total_time'] = df['task_count']*15
+        df['total_time'] = df['total_time']/60
+        fig = px.bar(data_frame=df, x='phName', y='total_time', 
+                    labels={'phName':'薬剤師名','total_time':'時間(hr)'},
+                    color_discrete_sequence=[PLOTLY_COLORS[0]])
+        return fig, df
+    
+    def get_check_medication_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName','task','count']]
+        df = df[df['task'] =='持参薬を確認']
+        df = df.groupby(['phName','task']).agg(
+            count_sum =('count','sum'),
+            task_count = ('task','size')
+        ).reset_index()
+        df['time'] = df['task_count']*15
+        df['time_per_task'] = df['time'] / df['count_sum']
+        fig = go.Figure(
+            data=[
+                go.Bar(name="件数(件)", x=df['phName'], y=df['count_sum'],
+                    marker=dict(color=PLOTLY_COLORS[0])),
+                go.Bar(name="1件あたりの時間(min)", x=df['phName'], y=df['time_per_task'],
+                    marker=dict(color=PLOTLY_COLORS[1]))
+            ]
+        )
+        fig.update_layout(xaxis_title="薬剤師名", yaxis_title="件数(件)/1件あたりの時間(min)")
+        return fig, df
+    
+    def get_recept_agent_modification_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName','count','task']]
+        df = df[df['task'] =='処方代理修正']
+        df = df.groupby(['phName','task']).agg(
+            count_sum=('count','sum'),
+            task_count=('task','size')
+        ).reset_index()
+        df['time'] = df['task_count']*15
+        df['time_per_task'] = df['time'] / df['count_sum']
+        fig = go.Figure(
+            data=[
+                go.Bar(name="件数(件)", x=df['phName'], y=df['count_sum'],
+                    marker=dict(color=PLOTLY_COLORS[0])),
+                go.Bar(name="1件あたりの時間(min)", x=df['phName'], y=df['time_per_task'],
+                    marker=dict(color=PLOTLY_COLORS[1]))
+            ]
+        )
+        fig.update_layout(xaxis_title="薬剤師名", yaxis_title="件数(件)/1件あたりの時間(min)")
+        return fig, df
+    
+    def get_medication_guidance_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        med_data = df[['phName','count','task']]
+        med_data = med_data[med_data['task']=='服薬指導＋指導記録作成']
+        med_data = med_data.groupby(['phName','task']).agg(
+            count_sum = ('count','sum'),
+            time = ('task','size')
+        ).reset_index()
+        med_data['total_time'] = med_data['time']*15
+        med_data['time_per_task'] = med_data['total_time'] / med_data['count_sum']
+        fig = go.Figure(
+            data=[
+                go.Bar(name="件数(件)", x=med_data['phName'], y=med_data['count_sum'],
+                    marker=dict(color=PLOTLY_COLORS[0])),
+                go.Bar(name="1件あたりの時間(min)", x=med_data['phName'], y=med_data['time_per_task'],
+                    marker=dict(color=PLOTLY_COLORS[1]))
+            ]
+        )
+        fig.update_layout(xaxis_title="薬剤師名", yaxis_title="件数(件)/1件あたりの時間(min)")
+        return fig, med_data[['phName','count_sum','time_per_task']]
+    
+    def get_clean_preparation_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName','task']]
+        df = df[df['task']=='無菌調製関連業務']
+        df = df.groupby(['phName','task']).size().reset_index(name='count_sum')
+        df['time'] = df['count_sum']*15
+        fig = px.bar(data_frame=df, x='phName', y='time', 
+                    labels={'phName':'薬剤師名','time':'総時間(min)'},
+                    color_discrete_sequence=[PLOTLY_COLORS[0]])
+        return fig, df
+    
+    def get_drag_set_check_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName','task']]
+        df = df[df['task']=='薬剤セット・確認']
+        df = df.groupby(['phName','task']).size().reset_index(name='count_sum')
+        df['time'] = df['count_sum']*15
+        fig = px.bar(data_frame=df, x='phName', y='time', 
+                    labels={'phName':'薬剤師名','time':'総時間(min)'},
+                    color_discrete_sequence=[PLOTLY_COLORS[0]])
+        return fig, df
+    
+    def get_research_info_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName','task','count']]
+        df = df[df['task']=='薬剤使用状況の把握等（情報収集）']
+        df = df.groupby(['phName','task']).agg(
+            count_sum =('count','sum'),
+            size_count =('task','size'),
+        ).reset_index()
+        df['time'] = df['size_count']*15
+        df['time_per_count'] = df['time'] / df['count_sum']
+        fig = go.Figure(
+            data=[
+                go.Bar(name="件数(件)", x=df['phName'], y=df['count_sum'],
+                    marker=dict(color=PLOTLY_COLORS[0])),
+                go.Bar(name="1件あたりの時間(min)", x=df['phName'], y=df['time_per_count'],
+                    marker=dict(color=PLOTLY_COLORS[1]))
+            ]
+        )
+        fig.update_layout(xaxis_title="薬剤師名", yaxis_title="件数(件)/1件あたりの時間(min)")
+        return fig, df
+    
+    def get_jokusou_data():
+        df = filtered_data if filtered_data is not None else combined_data
+        df = df[['phName','task']]
+        df = df[df['task']=='褥瘡']
+        df = df.groupby(['phName','task']).size().reset_index(name='count_sum')
+        df['time'] = df['count_sum']*15
+        fig = px.bar(data_frame=df, x='phName', y='time', 
+                    labels={'phName':'薬剤師名','time':'総時間(min)'},
+                    color_discrete_sequence=[PLOTLY_COLORS[0]])
+        return fig, df
+    
+    # 各関数を実行してデータを収集
+    data_functions = [
+        ('1on1', get_1on1_data),
+        ('NST', get_nst_data),
+        ('TDM実施', get_tdm_data),
+        ('TPN評価', get_tpn_data),
+        ('WG活動', get_wg_data),
+        ('カンファ・ラウンド', get_confa_data),
+        ('カンファレンス', get_conference_data),
+        ('その他の職種からの相談', get_other_consultation_data),
+        ('医師からの相談', get_doctor_consultation_data),
+        ('看護師からの相談', get_nurse_consultation_data),
+        ('管理業務', get_management_time_data),
+        ('業務調整', get_adjustment_work_data),
+        ('持参薬を確認', get_check_medication_data),
+        ('処方代理修正', get_recept_agent_modification_data),
+        ('服薬指導+記録作成', get_medication_guidance_data),
+        ('無菌調製関連業務', get_clean_preparation_data),
+        ('薬剤セット確認', get_drag_set_check_data),
+        ('薬剤使用状況の把握等', get_research_info_data),
+        ('褥瘡', get_jokusou_data),
+    ]
+    
+    for name, func in data_functions:
+        try:
+            fig, df = func()
+            if df is not None and not df.empty:
+                results.append({'name': name, 'fig': fig, 'df': df})
+        except Exception as e:
+            print(f"Error collecting data for {name}: {e}")
+    
+    return results
