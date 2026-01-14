@@ -7,5 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "chardet>=5.2.0",
     "dask>=2025.11.0",
+    "kaleido>=1.2.0",
+    "openpyxl>=3.1.5",
     "plotly>=6.5.0",
 ]

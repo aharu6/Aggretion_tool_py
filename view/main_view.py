@@ -32,8 +32,10 @@ from resizeDataframe.drawChart import (
     Jokusou_chart,
 
     self_task_ratio,
+    collect_all_charts_data,
 
 )
+from resizeDataframe.download_utils import create_download_package
 import ast
 
 #ユニークな病棟名の抽出
@@ -194,3 +196,21 @@ def View():
             #TODO:別途データフレームで件数、総時間、１件あたりの時間
             st.markdown("褥瘡")#個人ごとの、総時間、グラフ描画
             Jokusou_chart(filtered_data,combined_data)
+            
+            # 一括ダウンロードボタン
+            st.markdown("---")
+            st.subheader("データ一括ダウンロード")
+            if st.button("グラフとデータフレームを収集", key="collect_data_button"):
+                with st.spinner("データを収集中..."):
+                    charts_and_data = collect_all_charts_data(filtered_data, combined_data)
+                    if charts_and_data:
+                        zip_buffer = create_download_package(charts_and_data)
+                        st.download_button(
+                            label="📥 ZIPファイルをダウンロード",
+                            data=zip_buffer,
+                            file_name="業務分析レポート.zip",
+                            mime="application/zip"
+                        )
+                        st.success(f"✅ {len(charts_and_data)}件のデータを収集しました")
+                    else:
+                        st.warning("ダウンロード可能なデータが見つかりませんでした")
