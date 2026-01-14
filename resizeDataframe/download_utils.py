@@ -3,6 +3,17 @@ import zipfile
 from io import BytesIO
 import pandas as pd
 import plotly.graph_objects as go
+def get_japanese_font():
+    """
+    OSに応じて日本語フォントを返す
+    """
+    system = platform.system()
+    if system == 'Windows':
+        return 'Meiryo'  # Windows標準の日本語フォント
+    elif system == 'Darwin':  # macOS
+        return 'Hiragino Sans'  # または 'HirakakuProN-W3'
+    else:  # Linux
+        return 'IPAexGothic'  # または 'Noto Sans CJK JP'
 
 
 def create_download_package(charts_and_data):
@@ -36,8 +47,8 @@ def create_download_package(charts_and_data):
                         template='plotly',  # デフォルトのカラフルなテーマを使用
                         paper_bgcolor='white',  # 背景を白に
                         plot_bgcolor='white',   # プロット領域も白に
-                        font=dict(color='black'),  # テキストを黒に
-                        font_family = 'HirakakuProN-W3'  # フォントをヒラギノに設定
+                        font=dict(color='black',
+                                family = get_japanese_font()),  # テキストを黒に
                     )
                     img_bytes = fig_copy.to_image(format='png', width=1200, height=800)
                     zip_file.writestr(f'charts/{name}_chart.png', img_bytes)
