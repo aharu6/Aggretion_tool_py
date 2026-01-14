@@ -3,6 +3,7 @@ import zipfile
 from io import BytesIO
 import pandas as pd
 import plotly.graph_objects as go
+import platform
 def get_japanese_font():
     """
     OSに応じて日本語フォントを返す
