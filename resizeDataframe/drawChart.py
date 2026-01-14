@@ -19,7 +19,7 @@ def _filter_and_aggregate_task(data,task_name):
     task_data = task_data.groupby('phName',as_index =False)[['time','count']].sum()
     return task_data
     
-def         Calculate_1on1(filtered_data,combined_data):
+def Calculate_1on1(filtered_data,combined_data):
     def _extract_data(df):
         df=df[['phName','task']]
         df=df[df['task']=='1on1']
@@ -680,7 +680,8 @@ def collect_all_charts_data(filtered_data, combined_data):
         fig = px.bar(data_frame=df, x='phName', y='time', 
                     labels={'phName':'薬剤師名','time':'総時間(min)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
-        return fig, df
+        df = df.rename(columns={'time':'総時間(min)','phName':'薬剤師名','count':'記録回数'})
+        return fig, df[["総時間(min)","薬剤師名"]]
     
     def get_nst_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -690,7 +691,8 @@ def collect_all_charts_data(filtered_data, combined_data):
         df['time'] = df['count']*15
         fig = px.bar(data_frame=df, x='phName', y='time', 
                     labels={'phName':'薬剤師名','time':'総時間(min)'},color_discrete_sequence=[PLOTLY_COLORS[0]])
-        return fig, df
+        df = df.rename(columns={'time':'総時間(min)','phName':'薬剤師名'})
+        return fig, df[["総時間(min)","薬剤師名"]]
     
     def get_tdm_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -711,7 +713,8 @@ def collect_all_charts_data(filtered_data, combined_data):
             ]
         )
         fig.update_layout(xaxis_title="薬剤師名", yaxis_title="件数(件)/1件あたりの時間(min)")
-        return fig, df
+        df = df.rename(columns={'count_sum':'総件数','time':'総時間(min)','phName':'薬剤師名','time_per_count':'1件あたりの時間(min)'})
+        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]]
     
     def get_tpn_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -723,7 +726,8 @@ def collect_all_charts_data(filtered_data, combined_data):
         ).reset_index()
         df['time'] = df['size_count']*15
         df['time_per_count'] = df['time'] / df['count_sum']
-        return None, df  # TPNはグラフがないのでNone
+        df=df.rename(columns={'count_sum':'総件数','size_count':'記録回数','time':'総時間(min)','time_per_count':'1件あたりの時間(min)','phName':'薬剤師名'})
+        return None, df[["総件数","記録回数","総時間(min)","1件あたりの時間(min)","薬剤師名"]]  # TPNはグラフがないのでNone
     
     def get_wg_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -734,7 +738,8 @@ def collect_all_charts_data(filtered_data, combined_data):
         fig = px.bar(data_frame=df, x='phName', y='time', 
                     labels={'phName':'薬剤師名','time':'総時間(min)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
-        return fig, df
+        df = df.rename(columns={'time':'総時間(min)','phName':'薬剤師名'})
+        return fig, df[["総時間(min)","薬剤師名"]]
     
     def get_confa_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -746,7 +751,8 @@ def collect_all_charts_data(filtered_data, combined_data):
         fig = px.bar(data_frame=df, x='phName', y='time', 
                     labels={'phName':'薬剤師名','time':'総時間(hr)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
-        return fig, df
+        df = df.rename(columns={'time':'総時間(hr)','phName':'薬剤師名'})
+        return fig, df[["総時間(hr)","薬剤師名"]]
     
     def get_conference_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -757,7 +763,8 @@ def collect_all_charts_data(filtered_data, combined_data):
         fig = px.bar(data_frame=df, x='phName', y='time', 
                     labels={'phName':'薬剤師名','time':'総時間(min)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
-        return fig, df
+        df = df.rename(columns={'time':'総時間(min)','phName':'薬剤師名'})
+        return fig, df[["総時間(min)","薬剤師名"]]
     
     def get_other_consultation_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -778,7 +785,8 @@ def collect_all_charts_data(filtered_data, combined_data):
             ],
         )
         fig.update_layout(xaxis_title="薬剤師名", yaxis_title="件数(件)/1件あたりの時間(min)")
-        return fig, df
+        df = df.rename(columns={'count_sum':'総件数','time':'総時間(min)','phName':'薬剤師名','time_per_count':'1件あたりの時間(min)'})
+        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]]
     
     def get_doctor_consultation_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -799,7 +807,8 @@ def collect_all_charts_data(filtered_data, combined_data):
             ]
         )
         fig.update_layout(xaxis_title="薬剤師名", yaxis_title="件数(件)/1件あたりの時間(min)")
-        return fig, df
+        df = df.rename(columns={'count_sum':'総件数','time':'総時間(min)','phName':'薬剤師名','time_per_count':'1件あたりの時間(min)'})
+        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]]
     
     def get_nurse_consultation_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -820,7 +829,8 @@ def collect_all_charts_data(filtered_data, combined_data):
             ]
         )
         fig.update_layout(xaxis_title="薬剤師名", yaxis_title="件数(件)/1件あたりの時間(min)")
-        return fig, df
+        df = df.rename(columns={'count_sum':'総件数','time':'総時間(min)','phName':'薬剤師名','time_per_count':'1件あたりの時間(min)'})
+        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]]
     
     def get_management_time_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -832,7 +842,8 @@ def collect_all_charts_data(filtered_data, combined_data):
         fig = px.bar(data_frame=df, x='phName', y='total_time', 
                     labels={'phName':'薬剤師名','total_time':'時間(hr)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
-        return fig, df
+        df =df.rename(columns={'total_time':'時間(hr)','phName':'薬剤師名','task_count':'記録回数'})
+        return fig, df[['時間(hr)','薬剤師名']]
     
     def get_adjustment_work_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -844,7 +855,8 @@ def collect_all_charts_data(filtered_data, combined_data):
         fig = px.bar(data_frame=df, x='phName', y='total_time', 
                     labels={'phName':'薬剤師名','total_time':'時間(hr)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
-        return fig, df
+        df = df.rename(columns={'total_time':'時間(hr)','phName':'薬剤師名'})
+        return fig, df[['時間(hr)','薬剤師名']]
     
     def get_check_medication_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -865,7 +877,8 @@ def collect_all_charts_data(filtered_data, combined_data):
             ]
         )
         fig.update_layout(xaxis_title="薬剤師名", yaxis_title="件数(件)/1件あたりの時間(min)")
-        return fig, df
+        df = df.rename(columns={'count_sum':'総件数','time':'総時間(min)','phName':'薬剤師名','time_per_task':'1件あたりの時間(min)'})
+        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]]
     
     def get_recept_agent_modification_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -886,7 +899,8 @@ def collect_all_charts_data(filtered_data, combined_data):
             ]
         )
         fig.update_layout(xaxis_title="薬剤師名", yaxis_title="件数(件)/1件あたりの時間(min)")
-        return fig, df
+        df = df.rename(columns={'count_sum':'総件数','time':'総時間(min)','phName':'薬剤師名','time_per_task':'1件あたりの時間(min)'})
+        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]]
     
     def get_medication_guidance_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -907,7 +921,8 @@ def collect_all_charts_data(filtered_data, combined_data):
             ]
         )
         fig.update_layout(xaxis_title="薬剤師名", yaxis_title="件数(件)/1件あたりの時間(min)")
-        return fig, med_data[['phName','count_sum','time_per_task']]
+        med_data = med_data.rename(columns={'count_sum':'総件数','time':'総時間(min)','phName':'薬剤師名','time_per_task':'1件あたりの時間(min)'})
+        return fig, med_data[['薬剤師名','総件数','1件あたりの時間(min)']]
     
     def get_clean_preparation_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -918,7 +933,8 @@ def collect_all_charts_data(filtered_data, combined_data):
         fig = px.bar(data_frame=df, x='phName', y='time', 
                     labels={'phName':'薬剤師名','time':'総時間(min)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
-        return fig, df
+        df = df.rename(columns={'count_sum':'総記録回数','time':'総時間(min)','phName':'薬剤師名'})
+        return fig, df[["総時間(min)","薬剤師名"]]
     
     def get_drag_set_check_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -929,7 +945,8 @@ def collect_all_charts_data(filtered_data, combined_data):
         fig = px.bar(data_frame=df, x='phName', y='time', 
                     labels={'phName':'薬剤師名','time':'総時間(min)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
-        return fig, df
+        df = df.rename(columns={'count_sum':'総記録回数','time':'総時間(min)','phName':'薬剤師名'})
+        return fig, df[["総時間(min)","薬剤師名"]]
     
     def get_research_info_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -950,7 +967,9 @@ def collect_all_charts_data(filtered_data, combined_data):
             ]
         )
         fig.update_layout(xaxis_title="薬剤師名", yaxis_title="件数(件)/1件あたりの時間(min)")
-        return fig, df
+        df = df.rename(columns={'count_sum':'総件数','size_count':'記録回数','time_per_count':'1件あたりの時間(min)',
+                                'time':'総時間(min)','phName':'薬剤師名'})
+        return fig, df[["薬剤師名","総件数","記録回数","総時間(min)","1件あたりの時間(min)"]]
     
     def get_jokusou_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -961,7 +980,8 @@ def collect_all_charts_data(filtered_data, combined_data):
         fig = px.bar(data_frame=df, x='phName', y='time', 
                     labels={'phName':'薬剤師名','time':'総時間(min)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
-        return fig, df
+        df = df.rename(columns={'count_sum':'総記録回数','time':'総時間(min)','phName':'薬剤師名'})
+        return fig, df[["総時間(min)","薬剤師名"]]
     
     # 各関数を実行してデータを収集
     data_functions = [
