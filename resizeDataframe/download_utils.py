@@ -36,7 +36,8 @@ def create_download_package(charts_and_data):
                         template='plotly',  # デフォルトのカラフルなテーマを使用
                         paper_bgcolor='white',  # 背景を白に
                         plot_bgcolor='white',   # プロット領域も白に
-                        font=dict(color='black')  # テキストを黒に
+                        font=dict(color='black'),  # テキストを黒に
+                        font_family = 'HirakakuProN-W3'  # フォントをヒラギノに設定
                     )
                     img_bytes = fig_copy.to_image(format='png', width=1200, height=800)
                     zip_file.writestr(f'charts/{name}_chart.png', img_bytes)
