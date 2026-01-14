@@ -727,7 +727,7 @@ def collect_all_charts_data(filtered_data, combined_data):
         df['time'] = df['size_count']*15
         df['time_per_count'] = df['time'] / df['count_sum']
         df=df.rename(columns={'count_sum':'総件数','size_count':'記録回数','time':'総時間(min)','time_per_count':'1件あたりの時間(min)','phName':'薬剤師名'})
-        return None, df[["総件数","記録回数","総時間(min)","1件あたりの時間(min)"]]  # TPNはグラフがないのでNone
+        return None, df[["総件数","記録回数","総時間(min)","1件あたりの時間(min)","薬剤師名"]]  # TPNはグラフがないのでNone
     
     def get_wg_data():
         df = filtered_data if filtered_data is not None else combined_data
@@ -969,7 +969,7 @@ def collect_all_charts_data(filtered_data, combined_data):
         fig.update_layout(xaxis_title="薬剤師名", yaxis_title="件数(件)/1件あたりの時間(min)")
         df = df.rename(columns={'count_sum':'総件数','size_count':'記録回数','time_per_count':'1件あたりの時間(min)',
                                 'time':'総時間(min)','phName':'薬剤師名'})
-        return fig, df[["総件数","記録回数","総時間(min)","1件あたりの時間(min)"]]
+        return fig, df[["薬剤師名","総件数","記録回数","総時間(min)","1件あたりの時間(min)"]]
     
     def get_jokusou_data():
         df = filtered_data if filtered_data is not None else combined_data
