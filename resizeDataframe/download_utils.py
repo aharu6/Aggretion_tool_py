@@ -75,6 +75,8 @@ def create_download_package(charts_and_data):
                     zip_file.writestr(f'charts/{name}_chart.png', img_bytes)
                 except Exception as e:
                     print(f"Error saving chart {name}: {e}")
+                    import traceback
+                    traceback.print_exc()
             
             # データフレームをExcel形式で保存
             if df is not None and not df.empty:
