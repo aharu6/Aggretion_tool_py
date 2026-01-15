@@ -50,6 +50,18 @@ def create_download_package(charts_and_data):
                         plot_bgcolor='white',   # プロット領域も白に
                         font=dict(color='black',
                                 family = get_japanese_font()),  # テキストを黒に
+                        legend_font=dict(color='black',
+                                family = get_japanese_font()),
+                        
+                    )
+                    fig_copy.update_xaxes(
+                        title_font=dict(color='black',
+                                        family = get_japanese_font()),
+                    )
+                    fig_copy.update_yaxes(
+                        color='black',
+                        title_font=dict(color='black',
+                                        family = get_japanese_font()),
                     )
                     img_bytes = fig_copy.to_image(format='png', width=1200, height=800)
                     zip_file.writestr(f'charts/{name}_chart.png', img_bytes)
