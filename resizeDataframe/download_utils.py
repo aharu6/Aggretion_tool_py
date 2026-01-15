@@ -11,13 +11,13 @@ def get_japanese_font():
     system = platform.system()
     if system == 'Windows':
         print("Detected OS: Windows")
-        return 'Meiryo,Yu Gothic, sans-serif'  # Windows標準の日本語フォント
+        return 'Yu Gothic, Meiryo, MS Gothic, sans-serif'
     elif system == 'Darwin':  # macOS
         print("Detected OS: macOS")
-        return 'Hiragino Sans'  # または 'HirakakuProN-W3'
+        return 'Hiragino Sans, Hiragino Kaku Gothic ProN, Arial Unicode MS, sans-serif'
     else:  # Linux
         print("Detected OS: Linux/Other")
-        return 'IPAexGothic'  # または 'Noto Sans CJK JP'
+        return 'Noto Sans CJK JP, IPAexGothic, sans-serif'
 
 
 def create_download_package(charts_and_data):
@@ -47,26 +47,31 @@ def create_download_package(charts_and_data):
                 try:
                     # 明示的にライトテーマを設定して元の色を保持
                     fig_copy = go.Figure(fig)
+                    japanese_font = get_japanese_font()
                     fig_copy.update_layout(
                         template='plotly',  # デフォルトのカラフルなテーマを使用
                         paper_bgcolor='white',  # 背景を白に
                         plot_bgcolor='white',   # プロット領域も白に
                         font=dict(color='black',
-                                family = get_japanese_font()),  # テキストを黒に
+                                family = japanese_font),  # テキストを黒に
                         legend_font=dict(color='black',
-                                family = get_japanese_font()),
+                                family = japanese_font),
                         
                     )
                     fig_copy.update_xaxes(
                         title_font=dict(color='black',
-                                        family = get_japanese_font()),
+                                        family = japanese_font),
+                        tickfont=dict(color='black',
+                                    family = japanese_font),
                     )
                     fig_copy.update_yaxes(
                         color='black',
                         title_font=dict(color='black',
-                                        family = get_japanese_font()),
+                                        family = japanese_font),
+                        tickfont=dict(color='black',
+                                    family = japanese_font),
                     )
-                    img_bytes = fig_copy.to_image(format='png', width=1200, height=800)
+                    img_bytes = fig_copy.to_image(format='png', width=1200, height=800,engine='kaleido')
                     zip_file.writestr(f'charts/{name}_chart.png', img_bytes)
                 except Exception as e:
                     print(f"Error saving chart {name}: {e}")
