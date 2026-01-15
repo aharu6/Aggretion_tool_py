@@ -10,10 +10,13 @@ def get_japanese_font():
     """
     system = platform.system()
     if system == 'Windows':
-        return 'Meiryo'  # Windows標準の日本語フォント
+        print("Detected OS: Windows")
+        return 'Meiryo,Yu Gothic, sans-serif'  # Windows標準の日本語フォント
     elif system == 'Darwin':  # macOS
+        print("Detected OS: macOS")
         return 'Hiragino Sans'  # または 'HirakakuProN-W3'
     else:  # Linux
+        print("Detected OS: Linux/Other")
         return 'IPAexGothic'  # または 'Noto Sans CJK JP'
 
 
