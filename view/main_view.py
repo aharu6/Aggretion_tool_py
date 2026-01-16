@@ -2,14 +2,11 @@ import streamlit as st
 from widgets.join_files import JoinFiles
 from dtgroupby.groupbytaskcount import GroupByTaskCount
 from resizeDataframe.drawChart import (
-    time_per_locate_chart,
     Medication_Guidance_Record_Creation,
     count_task,
-    task_per_location,
     task_heatmap,
     time_count_avg,
     comment_data,
-
     Calculate_1on1,
     Calculate_NST,
     Calculate_TDM,
@@ -21,7 +18,6 @@ from resizeDataframe.drawChart import (
     Calculate_doctor_consultation,
     Calculate_nurse_consultation,
     total_time_per_task,
-    componentChart_location,
     Manegment_time,
     Adjustment_work,
     Check_Medication,
@@ -30,10 +26,14 @@ from resizeDataframe.drawChart import (
     drag_set_check,
     research_info_chart,
     Jokusou_chart,
-
     self_task_ratio,
     collect_all_charts_data,
-
+)
+from resizeDataframe.location_charts import (
+    collect_location_charts_data,
+    componentChart_location,
+    time_per_locate_chart,
+    task_per_location,
 )
 from resizeDataframe.download_utils import create_download_package
 import ast
@@ -55,6 +55,25 @@ def get_dataframe_hash(df):
     return hashlib.md5(pd.util.hash_pandas_object(df,index=True).values).hexdigest()
 from config.release_notes import get_release_notes
 
+
+def downlad_handler(collected_data_handler,filtered_data,combined_data):
+    # 一括ダウンロードボタン
+        st.markdown("---")
+        st.subheader("データ一括ダウンロード")
+        if st.button("グラフとデータフレームを収集", key="collect_data_button"):
+            with st.spinner("データを収集中..."):
+                charts_and_data = collected_data_handler(filtered_data, combined_data)
+                if charts_and_data:
+                    zip_buffer = create_download_package(charts_and_data)
+                    st.download_button(
+                        label="📥 ZIPファイルをダウンロード",
+                        data=zip_buffer,
+                        file_name="業務分析レポート.zip",
+                        mime="application/zip"
+                    )
+                    st.success(f"✅ {len(charts_and_data)}件のデータを収集しました")
+                else:
+                    st.warning("ダウンロード可能なデータが見つかりませんでした")
 def View():
     st.title("日誌集計ツール")
     st.markdown("このアプリケーションは複数のCSVファイルを結合し、集計を行うツールです。")
@@ -143,6 +162,7 @@ def View():
             st.markdown("記録された業務内容と総時間")
             task_per_location(filtered_data,combined_data)     
             
+            downlad_handler(collect_location_charts_data,filtered_data,combined_data)
 
         elif slider == "業務別分析":
             st.sidebar.markdown("期間選択")
@@ -199,19 +219,4 @@ def View():
             Jokusou_chart(filtered_data,combined_data)
             
             # 一括ダウンロードボタン
-            st.markdown("---")
-            st.subheader("データ一括ダウンロード")
-            if st.button("グラフとデータフレームを収集", key="collect_data_button"):
-                with st.spinner("データを収集中..."):
-                    charts_and_data = collect_all_charts_data(filtered_data, combined_data)
-                    if charts_and_data:
-                        zip_buffer = create_download_package(charts_and_data)
-                        st.download_button(
-                            label="📥 ZIPファイルをダウンロード",
-                            data=zip_buffer,
-                            file_name="業務分析レポート.zip",
-                            mime="application/zip"
-                        )
-                        st.success(f"✅ {len(charts_and_data)}件のデータを収集しました")
-                    else:
-                        st.warning("ダウンロード可能なデータが見つかりませんでした")
+            downlad_handler(collect_all_charts_data,filtered_data,combined_data)

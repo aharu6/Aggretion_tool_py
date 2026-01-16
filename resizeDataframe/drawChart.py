@@ -143,33 +143,6 @@ def Calculate_nurse_consultation(filtered_data,combined_data):
 
 
 
-import ast
-def time_per_locate_chart(filtered_data,combined_data):
-    def _extract_locate_data(df):
-        df = df[['locate']].copy()
-        df = df[df['locate'].notnull()]
-        df['locate']= df['locate'].apply(ast.literal_eval)
-        df['locate'] = df['locate'].apply(lambda x: x[0] if len(x)>0 else 'Unknown')
-        df = df[df['locate'] != 'Unknown']
-        df = df.groupby('locate').size().reset_index(name='time')
-        df['time'] = df['time']*15
-        df['time'] = df['time']/60
-        return df
-    
-    df=_extract_locate_data(filtered_data if filtered_data is not None else combined_data)
-    fig =px.bar(
-        data_frame=df,
-        x='locate',
-        y='time',
-        labels={'locate':'病棟','time':'総時間(hr)'}
-    )
-    fig.update_layout(
-        xaxis_title="病棟",
-        yaxis_title="総時間(hr)",
-    )
-    st.plotly_chart(fig,key="time_per_locate_chart")
-
-
 def Manegment_time(filtered_data,combined_data):
     df = ChartDataExtractor(filtered_data=filtered_data,
                             combined_data=combined_data).extract_task_data(task_name='管理業務',to_hours=True)
@@ -228,30 +201,6 @@ def total_time_per_task(filtered_data,combined_data):
 
 import plotly.express as px
 import pandas as pd
-def componentChart_location(filtered_data,combined_data):
-    def _extract_data(df):
-        df = df[['locate','task']]
-        df=df.groupby(['locate','task']).size().reset_index(name='count')
-        #複数病棟記載されている場合は強制的に先頭の病棟へ統一
-        df['locate'] = df['locate'].apply(ast.literal_eval)
-        df['locate'] = df['locate'].apply(lambda x: x[0] if len(x)>0 else 'Unknown')
-        return df
-    
-    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
-    chart_list = []
-    try:
-        for locate in df['locate'].unique():
-            filtered_data=df[df['locate'] ==locate]
-            fig = px.pie(filtered_data,values='count',names='task')
-            chart_list.append((locate,fig))
-
-        for locate,fig in chart_list:
-            st.markdown(f"### 場所: {locate}")
-            st.plotly_chart(fig)
-    except Exception as e:
-        st.warning(f"チャートの作成中にエラーが発生しました: {e}")
-
-    #TODO:データが存在しない場合はst.infoで通知
 
 def clean_preparation(filtered_data,combined_data):
     df = ChartDataExtractor(filtered_data,combined_data).extract_task_data(
@@ -346,35 +295,6 @@ def task_heatmap(filtered_data,combined_data):
     )
     st.plotly_chart(fig,key="task_heatmap_chart")
 
-
-def task_per_location(filtered_data,combined_data):
-    def _extract_data(df):
-        df = df[['locate','task']]
-        df = df[df['locate'].notnull()]
-        df['locate'] = df['locate'].apply(ast.literal_eval)
-        df['locate'] = df['locate'].apply(lambda x: x[0] if len(x)>0 else 'Unknown')
-        df = df.groupby(['locate','task']).size().reset_index(name='count')
-        df['time'] = df['count']*15
-        df['time'] = df['time']/60
-        return df
-    
-    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
-
-    fig = px.bar(
-        data_frame=df,
-        x = 'locate',
-        y = 'time',
-        color= 'task',
-        labels={'locate':'病棟','time':'総時間(hr)','task':'業務内容'},
-        color_discrete_map=TASK_COLOR_MAP,
-        barmode='stack',
-        hover_data={'task':True,'time':True,'locate':True}
-    )
-    fig.update_layout(
-        xaxis_title="病棟",
-        yaxis_title="総時間(hr)",
-    )
-    st.plotly_chart(fig,key="task_per_location_chart")
 
 def count_task(filtered_data,combined_data):
     fig,df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
