@@ -121,7 +121,7 @@ def View():
             st.subheader("個人ごとの集計")
             st.markdown("業務割合")
             self_task_ratio(filtered_data,combined_data)
-            st.markdown("時間・件数・1件あたりの時間・平均値")
+            st.markdown("時間・件数・1件あたりの時間")
             time_count_avg(filtered_data,combined_data)
 
         elif slider == "病棟別分析":
@@ -141,7 +141,8 @@ def View():
             st.markdown("時間の合計")#locateごとに作成する
             time_per_locate_chart(filtered_data,combined_data)
             st.markdown("記録された業務内容と総時間")
-            task_per_location(filtered_data,combined_data)            
+            task_per_location(filtered_data,combined_data)     
+            
 
         elif slider == "業務別分析":
             st.sidebar.markdown("期間選択")
