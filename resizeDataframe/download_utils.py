@@ -71,7 +71,7 @@ def create_download_package(charts_and_data):
                         tickfont=dict(color='black',
                                     family = japanese_font),
                     )
-                    img_bytes = fig_copy.to_image(format='png', width=1200, height=800,engine='kaleido')
+                    img_bytes = fig_copy.to_image(format='png', width=1920, height=1080,scale=2,engine='kaleido')
                     zip_file.writestr(f'charts/{name}_chart.png', img_bytes)
                 except Exception as e:
                     print(f"Error saving chart {name}: {e}")
