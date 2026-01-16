@@ -141,7 +141,8 @@ def View():
             st.markdown("時間の合計")#locateごとに作成する
             time_per_locate_chart(filtered_data,combined_data)
             st.markdown("記録された業務内容と総時間")
-            task_per_location(filtered_data,combined_data)            
+            task_per_location(filtered_data,combined_data)     
+            
 
         elif slider == "業務別分析":
             st.sidebar.markdown("期間選択")
