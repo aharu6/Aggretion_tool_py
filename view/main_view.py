@@ -121,7 +121,7 @@ def View():
             st.subheader("個人ごとの集計")
             st.markdown("業務割合")
             self_task_ratio(filtered_data,combined_data)
-            st.markdown("時間・件数・1件あたりの時間・平均値")
+            st.markdown("時間・件数・1件あたりの時間")
             time_count_avg(filtered_data,combined_data)
 
         elif slider == "病棟別分析":
