@@ -6,19 +6,6 @@ import pandas as pd
 import ast
 def _get_data(filtered_data,combined_data):
     return filtered_data if filtered_data is not None else combined_data
-
-def _filter_by_task(df,task_name):
-    """タスクでフィルタリング"""
-    return df[df['task'] ==task_name]
-
-def _parse_locate(locate_value):
-    if pd.isna(locate_value):
-        return 'Unknown'
-    try:
-        parsed = ast.literal_eval(locate_value) if isinstance(locate_value,str) else locate_value
-        return parsed[0] if len(parsed) >0 else 'Unknown'
-    except:
-        return 'Unknown'
     
 def _calculate_time_from_count(df,time_column = "count"):
     df['time'] = df[time_column] * 15
@@ -27,18 +14,6 @@ def _calculate_time_from_count(df,time_column = "count"):
 def _calculate_time(count,to_hours = False):
     time_min = count * 15
     return time_min / 60 if to_hours else time_min
-
-def _group_by_phname(df,columns = ['phName']):
-    return df.groupby(columns).size().reset_index(name='count') 
-
-def _aggregate_count_and_time(df,group_cols=['phName','task']):
-    result = df.groupby(group_cols).agg(
-        count_sum = ('count','sum'),
-        size_count = ('task','size')
-    ).reset_index()
-    result['time'] = result['size_count']*15
-    result['time_per_count'] = result['time'] / result['count_sum']
-    return result
 
 
 class ChartDataExtractor:
@@ -78,7 +53,212 @@ class ChartDataExtractor:
         
         return fig,df
     
+
+"""--各タスクの合計時間--"""
+def create_total_time_per_task(filtered_data,combined_data):
+    def _extract_data(df):
+        df = df[['task','count']]
+        df=df.groupby('task').size().reset_index(name='times')
+        df['times'] = df['times']*15
+        df['times'] =df['times']/60
+        return df
     
+    df =_extract_data(filtered_data if filtered_data is not None else combined_data)
+    fig = px.bar(data_frame=df,x='task',y='times',labels={'task':'業務名','times':'総時間(hr)'})
+    return fig,df
+
+def total_time_per_task(filtered_data,combined_data):
+    fig,df = create_total_time_per_task(filtered_data,combined_data)
+    st.plotly_chart(fig,key="total_time_per_task_chart")
+    
+"""---業務内容ごとの件数と1件あたりの時間---"""
+def count_task(filtered_data,combined_data):
+    fig,df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
+        task_name=False,colors=False
+    )
+    st.plotly_chart(fig,key="count_task_chart") 
+    
+"""--時間帯ごとに業務が記録された回数--"""
+def create_task_heatmap(filtered_data,combined_data):
+    def _extract_data(df):
+        df = df[['phName','time','task']]
+        df = df.groupby(['task','time']).size().reset_index(name = "count")
+        df['sort_time'] = df["time"].astype(str).fillna("")
+        df["sort_time"]=df["sort_time"].str.strip().str.split(" ").str[0]
+        df["sort_time"]=pd.to_datetime(df["sort_time"],format="%H:%M",errors="coerce")
+        df.sort_values("sort_time")
+        return df
+    
+    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
+    
+    fig = px.density_heatmap(
+        data_frame=df,
+        x="time",
+        y="task",
+        z="count",
+        labels={'time':'時間','task':'業務内容','count':'記録回数'}
+    )
+    fig.update_layout(
+        xaxis_title="時間",
+        yaxis_title="業務内容",
+    )
+    return fig,df
+
+def task_heatmap(filtered_data,combined_data):
+    fig,df = create_task_heatmap(filtered_data,combined_data)
+    st.plotly_chart(fig,key="task_heatmap_chart")
+
+"""--その他コメント--"""
+def create_comment_data(filtered_data,combined_data):
+    df = _get_data(filtered_data, combined_data)
+    df = df[['phName','comment','time','locate','date']]
+    df = df[df['comment'].notnull() & (df['comment'] !='')]
+    df['locate'] = df['locate'].apply(ast.literal_eval)
+    df['locate'] = df['locate'].apply(lambda x: x[0] if len(x)>0 else 'Unknown')
+    return df
+
+def comment_data(filtered_data,combined_data):
+    df = create_comment_data(filtered_data,combined_data)
+    st.dataframe(df,column_config={'phName':'薬剤師名','comment':'コメント','time':'時間','locate':'病棟','date':'日付'})
+
+"""--個人ごとの集計 ・業務割合--"""
+def create_self_task_ratio(filtered_data,combined_data):
+    def _extract_data(df):
+        df = df[['phName','task']]
+        df = df.groupby(['phName','task']).size().reset_index(name='count')
+        total_counts = df.groupby('phName')['count'].sum().reset_index(name='total_count')
+        merged_df = pd.merge(df, total_counts, on='phName')
+        merged_df['task_ratio'] = merged_df['count'] / merged_df['total_count']
+        return merged_df
+
+    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
+
+    fig = px.bar(
+        df,
+        x='task_ratio',
+        y='phName',
+        color='task',
+        orientation='h',
+        color_discrete_map=TASK_COLOR_MAP,
+        labels={'phName':'薬剤師名','task_ratio':'業務割合','task':'業務内容'},
+            )
+    fig.update_layout(
+        barmode='stack',
+    )
+    return fig,df
+
+def self_task_ratio(filtered_data,combined_data):
+    """個人毎の業務割合チャート"""
+    fig,df = create_self_task_ratio(filtered_data,combined_data)
+    st.plotly_chart(fig,key='self_task_ratio_chart')
+    
+"""--個人ごとの集計 ・時間・件数・1件あたりの時間--"""
+def create_time_count_avg(filtered_data,combined_data):
+    fig,df  = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
+        task_name=False,colors=False
+    )
+    #record_countは不要なので削除
+    df = df[['phName','task','count_sum','time','time_per_count']]
+    
+    #平均値dfを追加
+    avg_df = df.groupby('task').agg(
+        avg_total_count = ('count_sum','mean'),
+        avg_total_time = ('time','mean'),
+        avg_time_per_count = ('time_per_count','mean')
+    ).reset_index()
+    avg_df = avg_df[['task','avg_total_count','avg_total_time','avg_time_per_count']]
+    avg_df = avg_df.rename(columns={
+        'avg_total_count':'count_sum',
+        'avg_total_time':'time',
+        'avg_time_per_count':'time_per_count'
+    })
+    #phName列は不要なので削除
+    avg_df = avg_df[['task','count_sum','time','time_per_count']]
+    
+    return df,avg_df
+
+def time_count_avg(filtered_data,combined_data):
+    df,avg_df = create_time_count_avg(filtered_data,combined_data)
+    
+    st.dataframe(df,column_config={'phName':'薬剤師名','task':'業務内容','count_sum':'総件数','time':'総時間(min)','time_per_count':'1件あたりの時間(min)'})    
+
+    st.markdown("業務別平均値")
+    st.dataframe(avg_df,column_config={'task':'業務内容','count_sum':'総件数','time':'総時間(min)','time_per_count':'1件あたりの時間(min)'})
+
+
+def collect_about_chart(filtered_data, combined_data):
+    results = []
+    PLOTLY_COLORS = ['#2B66C2',"#93C7FA"]
+    """_summary_
+
+            st.subheader("各タスクの合計時間")
+            total_time_per_task(filtered_data,combined_data)
+            st.markdown("業務内容ごとの件数と1件あたりの時間")
+            count_task(filtered_data,combined_data)
+            st.subheader("時間帯ごとに業務が記録された回数")
+            task_heatmap(filtered_data,combined_data)
+            st.subheader("その他コメント")
+            comment_data(filtered_data,combined_data)
+            st.subheader("個人ごとの集計")
+            st.markdown("業務割合")
+            self_task_ratio(filtered_data,combined_data)
+            st.markdown("時間・件数・1件あたりの時間")
+            time_count_avg(filtered_data,combined_data)
+    """
+    def get_total_time_per_task():
+        fig,df = create_total_time_per_task(filtered_data,combined_data)
+        return fig,df
+    
+    def get_count_task():
+        fig,df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
+        task_name=False,colors=False
+    )
+        return fig,df
+    
+    def get_task_heatmap():
+        fig,df = create_task_heatmap(filtered_data,combined_data)
+        return fig,df
+    
+    def get_comment_data():
+        df = create_comment_data(filtered_data,combined_data)
+        return None,df  # グラフは不要なのでNoneを返す
+    
+    def get_self_task_ratio():
+        fig,df = create_self_task_ratio(filtered_data,combined_data)
+        return fig,df
+    
+    def get_time_self_count():
+        df,avg_df = create_time_count_avg(filtered_data,combined_data)
+        return None,df  # グラフは不要なのでNoneを返す
+    
+    def get_time_count_avg():
+        df,avg_df = create_time_count_avg(filtered_data,combined_data)
+        return None,avg_df  # グラフは不要なのでNoneを返す
+    
+    data_functions = [
+        ('各タスクの合計時間', get_total_time_per_task),
+        ('業務内容ごとの件数と1件あたりの時間', get_count_task),
+        ('時間帯ごとに業務が記録された回数', get_task_heatmap),
+        ('その他コメント', get_comment_data),
+        ('個人ごとの集計・業務割合', get_self_task_ratio),
+        ('個人ごとの集計・時間・件数・1件あたりの時間', get_time_self_count),
+        ('平均時間・件数・1件あたりの時間', get_time_count_avg),
+    ]
+    for name,func in data_functions:
+        try:
+            fig,df = func()
+            results.append({'name': name, 'fig': fig, 'df': df})
+        except Exception as e:
+            st.warning(f"{name}のデータ収集中にエラーが発生しました: {e}")
+            
+    return results
+
+    
+"""
+###
+# 業務別チャート関数群#
+# ##
+"""
 def Calculate_1on1(filtered_data,combined_data):
     df=ChartDataExtractor(filtered_data,combined_data).extract_task_data(task_name='1on1',to_hours=False)
     fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'})
@@ -184,20 +364,7 @@ def Medication_Guidance_Record_Creation(filtered_data,combined_data):
     st.dataframe(df[['phName','count_sum','time_per_count']],column_config={'phName':'薬剤師名','count_sum':'総件数','time_per_count':'1件あたりの時間(min)'})
 
 
-def total_time_per_task(filtered_data,combined_data):
-    def _extract_data(df):
-        df = df[['task','count']]
-        df=df.groupby('task').size().reset_index(name='times')
-        df['times'] = df['times']*15
-        df['times'] =df['times']/60
-        return df
-    
-    df =_extract_data(filtered_data if filtered_data is not None else combined_data)
-    try:
-        fig = px.bar(data_frame=df,x='task',y='times',labels={'task':'業務名','times':'総時間(hr)'})
-        st.plotly_chart(fig,key="total_time_per_task_chart")
-    except:
-        pass
+
 
 import plotly.express as px
 import pandas as pd
@@ -231,101 +398,6 @@ def Jokusou_chart(filtered_data,combined_data):
     fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'})
     st.plotly_chart(fig,key="Jokusou_chart")
         
-
-def self_task_ratio(filtered_data,combined_data):
-    """個人毎の業務割合チャート"""
-    def _extract_data(df):
-        df = df[['phName','task']]
-        df = df.groupby(['phName','task']).size().reset_index(name='count')
-        total_counts = df.groupby('phName')['count'].sum().reset_index(name='total_count')
-        merged_df = pd.merge(df, total_counts, on='phName')
-        merged_df['task_ratio'] = merged_df['count'] / merged_df['total_count']
-        return merged_df
-
-    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
-
-    fig = px.bar(
-        df,
-        x='task_ratio',
-        y='phName',
-        color='task',
-        orientation='h',
-        color_discrete_map=TASK_COLOR_MAP,
-        labels={'phName':'薬剤師名','task_ratio':'業務割合','task':'業務内容'},
-            )
-    fig.update_layout(
-        barmode='stack',
-    )
-    st.plotly_chart(fig,key='self_task_ratio_chart')
-
-def comment_data(filtered_data,combined_data):
-    def _extract_data(df):
-        df = df[['phName','comment','time','locate','date']]
-        df = df[df['comment'].notnull() & (df['comment'] !='')]
-        df['locate'] = df['locate'].apply(ast.literal_eval)
-        df['locate'] = df['locate'].apply(lambda x: x[0] if len(x)>0 else 'Unknown')
-        return df
-    
-    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
-    st.dataframe(df,column_config={'phName':'薬剤師名','comment':'コメント','time':'時間','locate':'病棟','date':'日付'})
-
-
-def task_heatmap(filtered_data,combined_data):
-    def _extract_data(df):
-        df = df[['phName','time','task']]
-        df = df.groupby(['task','time']).size().reset_index(name = "count")
-        df['sort_time'] = df["time"].astype(str).fillna("")
-        df["sort_time"]=df["sort_time"].str.strip().str.split(" ").str[0]
-        df["sort_time"]=pd.to_datetime(df["sort_time"],format="%H:%M",errors="coerce")
-        df.sort_values("sort_time")
-        return df
-    
-    df = _extract_data(filtered_data if filtered_data is not None else combined_data)
-    
-    fig = px.density_heatmap(
-        data_frame=df,
-        x="time",
-        y="task",
-        z="count",
-        labels={'time':'時間','task':'業務内容','count':'記録回数'}
-    )
-    fig.update_layout(
-        xaxis_title="時間",
-        yaxis_title="業務内容",
-    )
-    st.plotly_chart(fig,key="task_heatmap_chart")
-
-
-def count_task(filtered_data,combined_data):
-    fig,df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
-        task_name=False,colors=False
-    )
-    st.plotly_chart(fig,key="count_task_chart") 
-
-def time_count_avg(filtered_data,combined_data):
-    fig,df  = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
-        task_name=False,colors=False
-    )
-    #record_countは不要なので削除
-    df = df[['phName','task','count_sum','time','time_per_count']]
-    st.dataframe(df,column_config={'phName':'薬剤師名','task':'業務内容','count_sum':'総件数','time':'総時間(min)','time_per_count':'1件あたりの時間(min)'})    
-
-    #平均値dfを追加
-    avg_df = df.groupby('task').agg(
-        avg_total_count = ('count_sum','mean'),
-        avg_total_time = ('time','mean'),
-        avg_time_per_count = ('time_per_count','mean')
-    ).reset_index()
-    avg_df = avg_df[['task','avg_total_count','avg_total_time','avg_time_per_count']]
-    avg_df = avg_df.rename(columns={
-        'avg_total_count':'count_sum',
-        'avg_total_time':'time',
-        'avg_time_per_count':'time_per_count'
-    })
-    #phName列は不要なので削除
-    avg_df = avg_df[['task','count_sum','time','time_per_count']]
-    st.markdown("業務別平均値")
-    st.dataframe(avg_df,column_config={'task':'業務内容','count_sum':'総件数','time':'総時間(min)','time_per_count':'1件あたりの時間(min)'})
 
 
 def collect_all_charts_data(filtered_data, combined_data):
