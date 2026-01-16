@@ -28,6 +28,7 @@ from resizeDataframe.drawChart import (
     Jokusou_chart,
     self_task_ratio,
     collect_all_charts_data,
+    collect_about_chart
 )
 from resizeDataframe.location_charts import (
     collect_location_charts_data,
@@ -142,7 +143,8 @@ def View():
             self_task_ratio(filtered_data,combined_data)
             st.markdown("時間・件数・1件あたりの時間")
             time_count_avg(filtered_data,combined_data)
-
+            # 一括ダウンロードボタン
+            downlad_handler(collect_about_chart,filtered_data,combined_data)
         elif slider == "病棟別分析":
             #日付以外に病棟名や個人名で絞り込みを行う
             locate_select =st.sidebar.multiselect(label="病棟の絞り込み",options=select_locate_list)
