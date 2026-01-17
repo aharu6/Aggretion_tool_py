@@ -56,7 +56,8 @@ def create_download_package(charts_and_data):
                                 family = japanese_font),  # テキストを黒に
                         legend_font=dict(color='black',
                                 family = japanese_font),
-                        
+                        title=dict(text=name,font = dict(size=30)),
+                        title_font_family=japanese_font,
                     )
                     fig_copy.update_xaxes(
                         title_font=dict(color='black',
