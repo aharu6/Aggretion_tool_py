@@ -41,6 +41,7 @@ def create_download_package(charts_and_data):
             name = item.get('name', 'unknown')
             fig = item.get('fig')
             df = item.get('df')
+            total_df = item.get('total_df')
             
             # グラフをPNG形式で保存
             if fig is not None:
@@ -81,15 +82,16 @@ def create_download_package(charts_and_data):
             
             # データフレームをExcel形式で保存
             if df is not None and not df.empty:
-                try:
-                    excel_buffer = BytesIO()
-                    with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-                        df.to_excel(writer, index=False, sheet_name=name[:31])  # Excelのシート名は31文字まで
-                    excel_buffer.seek(0)
-                    zip_file.writestr(f'data/{name}_data.xlsx', excel_buffer.getvalue())
-                except Exception as e:
-                    print(f"Error saving dataframe {name}: {e}")
-    
+                if total_df is not None and not total_df.empty:
+                    try:
+                        excel_buffer = BytesIO()
+                        with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                            df.to_excel(writer, index=False, sheet_name=name[:31])  # Excelのシート名は31文字まで
+                            total_df.to_excel(writer, index=False, sheet_name=f"{name[:27]}_総件数・総時間")
+                        excel_buffer.seek(0)
+                        zip_file.writestr(f'data/{name}_data.xlsx', excel_buffer.getvalue())
+                    except Exception as e:
+                        print(f"Error saving dataframe {name}: {e}")
     zip_buffer.seek(0)
     return zip_buffer
 

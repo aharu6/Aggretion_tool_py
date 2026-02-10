@@ -439,45 +439,61 @@ def collect_all_charts_data(filtered_data, combined_data):
         fig = px.bar(data_frame=df, x='phName', y='time_min', 
                     labels={'phName':'薬剤師名','time_min':'総時間(min)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
+        total_df = df.agg({'time_min':'sum'}).to_frame().T
         df = df.rename(columns={'time_min':'総時間(min)','phName':'薬剤師名','count':'記録回数'})
-        return fig, df[["総時間(min)","薬剤師名"]]
+        total_df = total_df.rename(columns={'time_min':'総時間(min)'})
+        return fig, df[["総時間(min)","薬剤師名"]],total_df[["総時間(min)"]]
     
     def get_nst_data():
         df =ChartDataExtractor(filtered_data,combined_data).extract_task_data(task_name='NST',to_hours=False)
         fig = px.bar(data_frame=df, x='phName', y='time_min', 
                     labels={'phName':'薬剤師名','time_min':'総時間(min)'},color_discrete_sequence=[PLOTLY_COLORS[0]])
+        total_df = df.agg({'time_min':'sum'}).to_frame().T
         df = df.rename(columns={'time_min':'総時間(min)','phName':'薬剤師名'})
-        return fig, df[["総時間(min)","薬剤師名"]]
+        total_df =total_df.rename(columns={'time_min':'総時間(min)'})
+        return fig, df[["総時間(min)","薬剤師名"]],total_df[["総時間(min)"]]
     
     def get_tdm_data():
         fig ,df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
             task_name='TDM実施', colors=PLOTLY_COLORS
         )
-        df = df.rename(columns={'count_sum':'総件数','time':'総時間(min)','phName':'薬剤師名','time_per_count':'1件あたりの時間(min)'})
-        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]]
+        total_df = df.agg({
+            'count_sum':'sum',
+            'time':'sum'
+        }).to_frame().T
+        
+        df = df.rename(columns={'count_sum':'総件数','time':'総時間(min)','phName':'薬剤師名','time_per_count':'1件あたりの時間(min)'}) #薬剤師名ごとのデータフレーム
+        total_df = total_df.rename(columns = {'count_sum':'総件数', 'time':'総時間(min)'})#全薬剤師合計のデータフレーム
+        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]],total_df[["総件数","総時間(min)"]]
     
     def get_tpn_data():
         fig,df = ChartDataExtractor(filtered_data, combined_data)._create_count_chart_data(
             task_name='TPN評価', colors=False
         )
+        total_df = df.agg({'count_sum':'sum','time':'sum'}).to_frame().T
         df=df.rename(columns={'count_sum':'総件数','size_count':'記録回数','time':'総時間(min)','time_per_count':'1件あたりの時間(min)','phName':'薬剤師名'})
-        return None, df[["総件数","記録回数","総時間(min)","1件あたりの時間(min)","薬剤師名"]]  # TPNはグラフがないのでNone
+        total_df = total_df.rename(columns={'count_sum':'総件数','time':'総時間(min)'})
+        return None, df[["総件数","記録回数","総時間(min)","1件あたりの時間(min)","薬剤師名"]], total_df[["総件数","総時間(min)"]]  # TPNはグラフがないのでNone
     
     def get_wg_data():
         df = ChartDataExtractor(filtered_data,combined_data).extract_task_data(task_name='WG活動',to_hours=False)
         fig = px.bar(data_frame=df, x='phName', y='time_min', 
                     labels={'phName':'薬剤師名','time_min':'総時間(min)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
+        total_df = df.agg({'time_min':'sum'}).to_frame().T
         df = df.rename(columns={'time_min':'総時間(min)','phName':'薬剤師名'})
-        return fig, df[["総時間(min)","薬剤師名"]]
+        total_df = total_df.rename(columns={'time_min':'総時間(min)'})
+        return fig, df[["総時間(min)","薬剤師名"]],total_df[["総時間(min)"]]
     
     def get_confa_data():
         df = ChartDataExtractor(filtered_data,combined_data).extract_task_data(task_name='カンファ・ラウンド',to_hours=True)
         fig = px.bar(data_frame=df, x='phName', y='time_hr', 
                     labels={'phName':'薬剤師名','time_hr':'総時間(hr)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
+        total_df = df.agg({'time_hr':'sum'}).to_frame().T
         df = df.rename(columns={'time_hr':'総時間(hr)','phName':'薬剤師名'})
-        return fig, df[["総時間(hr)","薬剤師名"]]
+        total_df = total_df.rename(columns={'time_hr':'総時間(hr)'})
+        return fig, df[["総時間(hr)","薬剤師名"]],total_df[["総時間(hr)"]]
     
     def get_conference_data():
         df = ChartDataExtractor(filtered_data=filtered_data,
@@ -485,68 +501,88 @@ def collect_all_charts_data(filtered_data, combined_data):
         fig = px.bar(data_frame=df, x='phName', y='time_min', 
                     labels={'phName':'薬剤師名','time_min':'総時間(min)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
+        total_df = df.agg({'time_min':'sum'}).to_frame().T
         df = df.rename(columns={'time_min':'総時間(min)','phName':'薬剤師名'})
-        return fig, df[["総時間(min)","薬剤師名"]]
+        total_df = total_df.rename(columns={'time_min':'総時間(min)'})
+        return fig, df[["総時間(min)","薬剤師名"]], total_df[["総時間(min)"]]
     
     def get_other_consultation_data():
         fig,df = ChartDataExtractor(filtered_data=filtered_data,
                                     combined_data=combined_data)._create_count_chart_data(
                                         task_name='その他の職種からの相談', colors=PLOTLY_COLORS
                                     )
+                                    
+        total_df =df.agg({'count_sum':'sum','time':'sum'}).to_frame().T
         df = df.rename(columns={'count_sum':'総件数','time':'総時間(min)','phName':'薬剤師名','time_per_count':'1件あたりの時間(min)'})
-        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]]
+        total_df = total_df.rename(columns={'count_sum':'総件数','time':'総時間(min)'})
+        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]],total_df[["総件数","総時間(min)"]]
     
     def get_doctor_consultation_data():
         fig,df = ChartDataExtractor(filtered_data=filtered_data,
                                     combined_data=combined_data)._create_count_chart_data(
                                         task_name='医師からの相談', colors=PLOTLY_COLORS
                                     )
+        total_df=df.agg({'count_sum':'sum','time':'sum'}).to_frame().T
         df = df.rename(columns={'count_sum':'総件数','time':'総時間(min)','phName':'薬剤師名','time_per_count':'1件あたりの時間(min)'})
-        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]]
+        total_df = total_df.rename(columns={'count_sum':'総件数','time':'総時間(min)'})
+        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]],total_df[["総件数","総時間(min)"]]
     
     def get_nurse_consultation_data():
         fig,df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
             task_name='看護師からの相談', colors=PLOTLY_COLORS
         )
+        total_df = df.agg({'count_sum':'sum','time':'sum'}).to_frame().T
         df = df.rename(columns={'count_sum':'総件数','time':'総時間(min)','phName':'薬剤師名','time_per_count':'1件あたりの時間(min)'})
-        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]]
+        total_df = total_df.rename(columns={'count_sum':'総件数','time':'総時間(min)'})
+        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]], total_df[["総件数","総時間(min)"]]
     
     def get_management_time_data():
         df = ChartDataExtractor(filtered_data,combined_data).extract_task_data(task_name='管理業務',to_hours=True)
         fig = px.bar(data_frame=df, x='phName', y='time_hr', 
                     labels={'phName':'薬剤師名','time_hr':'時間(hr)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
+        total_df = df.agg({'time_hr':'sum'}).to_frame().T
         df =df.rename(columns={'time_hr':'時間(hr)','phName':'薬剤師名','count':'記録回数'})
-        return fig, df[['時間(hr)','薬剤師名']]
+        total_df = total_df.rename(columns={'time_hr':'総時間(hr)'})
+        return fig, df[['時間(hr)','薬剤師名']],total_df[['総時間(hr)']]
     
     def get_adjustment_work_data():
         df = ChartDataExtractor(filtered_data,combined_data).extract_task_data(task_name='業務調整',to_hours=True)
         fig = px.bar(data_frame=df, x='phName', y='time_hr', 
                     labels={'phName':'薬剤師名','time_hr':'時間(hr)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
-        df = df.rename(columns={'time_hr':'時間(hr)','薬剤師名':'薬剤師名'})
-        return fig, df[['時間(hr)','薬剤師名']]
+        total_df = df.agg({'time_hr':'sum'}).to_frame().T
+        df = df.rename(columns={'time_hr':'時間(hr)','phName':'薬剤師名'})
+        total_df = total_df.rename(columns={'time_hr':'総時間(hr)'})
+        return fig, df[['時間(hr)','薬剤師名']], total_df[['総時間(hr)']]
     
     def get_check_medication_data():
         fig,df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
             task_name='持参薬を確認', colors=PLOTLY_COLORS
         )
+        total_df = df.agg({'count_sum':'sum','time':'sum'}).to_frame().T
         df = df.rename(columns={'count_sum':'総件数','time':'総時間(min)','phName':'薬剤師名','time_per_count':'1件あたりの時間(min)'})
-        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]]
+        total_df = total_df.rename(columns={'count_sum':'総件数','time':'総時間(min)'})
+        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]], total_df[["総件数","総時間(min)"]]
     
     def get_recept_agent_modification_data():
         fig,df =ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
             task_name='処方代理修正', colors=PLOTLY_COLORS
         )
+        total_df = df.agg({'count_sum':'sum','time':'sum'}).to_frame().T
         df = df.rename(columns={'count_sum':'総件数','time':'総時間(min)','phName':'薬剤師名','time_per_task':'1件あたりの時間(min)'})
-        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]]
+        total_df = total_df.rename(columns={'count_sum':'総件数','time':'総時間(min)'})
+        return fig, df[["総件数","総時間(min)","薬剤師名","1件あたりの時間(min)"]],total_df[["総件数","総時間(min)"]]
     
     def get_medication_guidance_data():
         fig,df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
             task_name='服薬指導＋指導記録作成', colors=PLOTLY_COLORS
         )
+        total_df = df.agg({'count_sum':'sum','time':'sum'}).to_frame().T
+        
         df = df.rename(columns={'count_sum':'総件数','time':'総時間(min)','phName':'薬剤師名','time_per_task':'1件あたりの時間(min)'})
-        return fig, df[['薬剤師名','総件数','1件あたりの時間(min)']]
+        total_df = total_df.rename(columns={'count_sum':'総件数','time':'総時間(min)'})
+        return fig, df[['薬剤師名','総件数','1件あたりの時間(min)']], total_df[["総件数","総時間(min)"]]
     
     def get_clean_preparation_data():
         df = ChartDataExtractor(filtered_data=filtered_data,
@@ -554,8 +590,12 @@ def collect_all_charts_data(filtered_data, combined_data):
         fig = px.bar(data_frame=df, x='phName', y='time_min', 
                     labels={'phName':'薬剤師名','time_min':'総時間(min)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
+        total_df = df.agg({
+            'time':'sum'
+        }).to_frame().T
         df = df.rename(columns={'count_sum':'総記録回数','time_min':'総時間(min)','phName':'薬剤師名'})
-        return fig, df[["総時間(min)","薬剤師名"]]
+        total_df = total_df.rename(columns={'time':'総時間(min)'})
+        return fig, df[["総時間(min)","薬剤師名"]], total_df[["総時間(min)"]]   
     
     def get_drag_set_check_data():
         df = ChartDataExtractor(filtered_data=filtered_data,
@@ -563,16 +603,27 @@ def collect_all_charts_data(filtered_data, combined_data):
         fig = px.bar(data_frame=df, x='phName', y='time_min', 
                     labels={'phName':'薬剤師名','time_min':'総時間(min)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
+        total_df = df.agg({
+            'time':'sum'
+        }).to_frame().T
+        
         df = df.rename(columns={'count_sum':'総記録回数','time_min':'総時間(min)','phName':'薬剤師名'})
-        return fig, df[["総時間(min)","薬剤師名"]]
+        total_df = total_df.rename(columns={'time':'総時間(min)'})
+        return fig, df[["総時間(min)","薬剤師名"]], total_df[["総時間(min)"]]
     
     def get_research_info_data():
         fig,df =ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
             task_name='薬剤使用状況の把握等（情報収集）', colors=PLOTLY_COLORS
         )
+        total_df = df.agg({
+            'count_sum':'sum',
+            'time':'sum'
+        }).to_frame().T
         df = df.rename(columns={'count_sum':'総件数','size_count':'記録回数','time_per_count':'1件あたりの時間(min)',
                                 'time':'総時間(min)','phName':'薬剤師名'})
-        return fig, df[["薬剤師名","総件数","記録回数","総時間(min)","1件あたりの時間(min)"]]
+        total_df = total_df.rename(columns = {'count_sum':'総件数','time':'総時間(min)'})
+        
+        return fig, df[["薬剤師名","総件数","記録回数","総時間(min)","1件あたりの時間(min)"]], total_df[["総件数","総時間(min)"]]
     
     def get_jokusou_data():
         df = ChartDataExtractor(filtered_data=filtered_data,
@@ -580,8 +631,12 @@ def collect_all_charts_data(filtered_data, combined_data):
         fig = px.bar(data_frame=df, x='phName', y='time_min', 
                     labels={'phName':'薬剤師名','time_min':'総時間(min)'},
                     color_discrete_sequence=[PLOTLY_COLORS[0]])
+        total_df = df.agg({
+            'time':'sum'
+        }).to_frame().T
         df = df.rename(columns={'count_sum':'総記録回数','time_min':'総時間(min)','phName':'薬剤師名'})
-        return fig, df[["総時間(min)","薬剤師名"]]
+        total_df = total_df.rename(columns = {'time':'総時間(min)'})
+        return fig, df[["総時間(min)","薬剤師名"]], total_df[["総時間(min)"]]
     
     # 各関数を実行してデータを収集
     data_functions = [
@@ -608,9 +663,10 @@ def collect_all_charts_data(filtered_data, combined_data):
     
     for name, func in data_functions:
         try:
-            fig, df = func()
+            fig, df, total_df = func()
             if df is not None and not df.empty:
-                results.append({'name': name, 'fig': fig, 'df': df})
+                    results.append({'name': name, 'fig': fig, 'df': df,'total_df':total_df})
+                
         except Exception as e:
             print(f"Error collecting data for {name}: {e}")
     
