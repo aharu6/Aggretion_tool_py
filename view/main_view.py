@@ -178,45 +178,63 @@ def View():
             else:
                 st.sidebar.dataframe(combined_data.head(10))    
             
-
+            st.divider()
             st.markdown("1on1")
             Calculate_1on1(filtered_data,combined_data)
+            st.divider()
             st.markdown("NST")
             Calculate_NST(filtered_data,combined_data)
+            st.divider()
             st.markdown("TDM実施")
             Calculate_TDM(filtered_data,combined_data)
+            st.divider()
             st.markdown("TPN評価")
             Calculate_TPN(filtered_data,combined_data)
+            st.divider()
             st.markdown("WG活動")
             Calculate_WG(filtered_data,combined_data)
+            st.divider()
             st.markdown("カンファ・ラウンド")
             Calculate_confa(filtered_data,combined_data)
+            st.divider()
             st.markdown("カンファレンス")
             Calculate_conference(filtered_data,combined_data)
+            st.divider()
             st.markdown("その他の職種からの相談")
             Calculate_other_consultation(filtered_data,combined_data)
+            st.divider()
             st.markdown("医師からの相談")
             Calculate_doctor_consultation(filtered_data,combined_data)
+            st.divider()
             st.markdown("看護師からの相談")
             Calculate_nurse_consultation(filtered_data,combined_data)
+            st.divider()
             st.markdown("管理業務")#TODO:個人ごとの総時間グラフ
             Manegment_time(filtered_data,combined_data)
+            st.divider()
             st.markdown("業務調整")#個人ごとの総時間グラフ
             Adjustment_work(filtered_data,combined_data)
+            st.divider()
             st.markdown("持参薬を確認")#件数、総時間、１けんあたりの時間、グラフ描画必要
             Check_Medication(filtered_data,combined_data)
+            st.divider()
             st.markdown("処方代理修正")#件数、総時間、１けんあたりの時間、グラフ描画
             Recept_Agent_Modification(filtered_data,combined_data)
+            st.divider()
             st.markdown("服薬指導+記録作成")
             Medication_Guidance_Record_Creation(filtered_data,combined_data)#グラフとデータフレーム
             #データフレームは件数と１けんあたりの時間のみ
+            st.divider()
             st.markdown("無菌調整関連業務")#個人ごとの時間
             clean_preparation(filtered_data,combined_data)
+            st.divider()
             st.markdown("薬剤セット確認")#個人ごとの、総時間、グラフ描画
             drag_set_check(filtered_data,combined_data)
+            st.divider()
             st.markdown("薬剤使用状況の把握等(情報収集)")#個人ごとの件数と１けんあたりの時間を並列棒グラフ
             research_info_chart(filtered_data,combined_data)
             #TODO:別途データフレームで件数、総時間、１件あたりの時間
+            st.divider()
             st.markdown("褥瘡")#個人ごとの、総時間、グラフ描画
             Jokusou_chart(filtered_data,combined_data)
             
