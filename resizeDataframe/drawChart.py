@@ -50,7 +50,7 @@ class ChartDataExtractor:
             xaxis_title="薬剤師名",
             yaxis_title="件数(件)/1件あたりの時間(min)",
         )
-        
+        """df['phName':薬剤師名,'count_sum','time','time_per_count']"""
         return fig,df
     
 
@@ -277,6 +277,19 @@ def Calculate_TDM(filtered_data,combined_data):
         task_name='TDM実施',colors=False
     )
     st.plotly_chart(fig)
+    #size_countを除外
+    df = df[['phName','count_sum','time','time_per_count']]
+    st.dataframe(df,column_config={
+        'phName':'薬剤師名','count_sum':'総件数','time':'総時間(min)','time_per_count':'1件あたりの時間(min)'})
+    
+    #薬剤師名関係なく、件数の合計
+    sumcount_df =df.agg({
+        'count_sum':'sum',
+        'time':'sum'
+    }).to_frame().T
+    st.markdown("全薬剤師合計")
+    st.dataframe(sumcount_df,column_config={
+        'count_sum':'総件数','time':'総時間(min)'})
         
 
 def Calculate_TPN(filtered_data,combined_data):
