@@ -1,6 +1,7 @@
 import io
 import zipfile
 from io import BytesIO
+from io import StringIO
 import pandas as pd
 import plotly.graph_objects as go
 import platform
@@ -20,6 +21,31 @@ def get_japanese_font():
         return 'Noto Sans CJK JP, IPAexGothic, sans-serif'
 
 
+def create_df_download_package(df):
+    """
+    データフレームをZIPファイルにまとめる
+    excel形式とcsv形式両方を保存する
+    """
+    zip_buffer = BytesIO()
+    
+    with zipfile.ZipFile(zip_buffer,'w',zipfile.ZIP_DEFLATED) as zip_file:
+        if df is not None and not df.empty:
+            try:
+                excel_buffer = BytesIO()
+                with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                    df.to_excel(writer,index =False,sheet_name='結合データ')
+                excel_buffer.seek(0)
+                zip_file.writestr('結合データ.xlsx', excel_buffer.getvalue())
+                
+                ccsv_buffer = StringIO()
+                df.to_csv(ccsv_buffer, index=False)
+                zip_file.writestr('結合データ.csv', ccsv_buffer.getvalue())
+                
+            except Exception as e:
+                print(f"Error saving dataframe: {e}")
+    zip_buffer.seek(0)
+    return zip_buffer
+    
 def create_download_package(charts_and_data):
     """
     グラフとデータフレームをZIPファイルにまとめる
