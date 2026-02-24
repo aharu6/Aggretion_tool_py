@@ -1,6 +1,7 @@
 import streamlit as st
 from widgets.join_files import JoinFiles
 from dtgroupby.groupbytaskcount import GroupByTaskCount
+from resizeDataframe.tidy_data import tidy_data
 from resizeDataframe.drawChart import (
     Medication_Guidance_Record_Creation,
     count_task,
@@ -28,7 +29,7 @@ from resizeDataframe.drawChart import (
     Jokusou_chart,
     self_task_ratio,
     collect_all_charts_data,
-    collect_about_chart
+    collect_about_chart,
 )
 from resizeDataframe.location_charts import (
     collect_location_charts_data,
@@ -36,7 +37,7 @@ from resizeDataframe.location_charts import (
     time_per_locate_chart,
     task_per_location,
 )
-from resizeDataframe.download_utils import create_download_package
+from resizeDataframe.download_utils import (create_download_package,create_df_download_package)
 import ast
 
 #ユニークな病棟名の抽出
@@ -95,7 +96,7 @@ def View():
         st.session_state.prev_slider = None
     
     #TODO ファイル読み込み中のプログレスバーを表示、中に読み込んだデータを元に集計項目を作成する旨を記載
-    slider = st.sidebar.pills("表示モード",options=["概要","病棟別分析","業務別分析"])
+    slider = st.sidebar.pills("表示モード",options=["概要","病棟別分析","業務別分析","データ加工"])
 
     if st.session_state.prev_slider != slider:
         #前の選択をクリア
@@ -240,3 +241,35 @@ def View():
             
             # 一括ダウンロードボタン
             downlad_handler(collect_all_charts_data,filtered_data,combined_data)
+        elif slider == "データ加工":
+            st.markdown("統合データの保存・加工")
+            st.text("結合されたデータフレームを加工してダウンロードできます")
+            
+            st.divider()
+            st.markdown("オプションを選択してください")
+            
+            st.sidebar.markdown("期間選択")
+            date_range = st.sidebar.date_input("日付範囲を選択してください",[])
+            filtered_data= GroupByTaskCount(combined_data).group_by_task_count(
+                date_range=date_range,locate_select=None,name_select=None)
+            
+            change_name = 0
+            st.toggle(label="名前の変更",key="rename_toggle",value=False)
+            if st.session_state.rename_toggle:
+                change_name = 1
+            st.subheader("加工データの作成とダウンロード")
+            if st.button("加工データを作成",key="create_tidy_data"):
+                with st.spinner("データを加工中..."):
+                    tidy_df,name_mapping_df = tidy_data(filtered_data,combined_data,change_name)
+                    st.dataframe(tidy_df.head())
+                    if tidy_df is not None and not tidy_df.empty:
+                        zip_buffer = create_df_download_package(tidy_df,name_mapping_df)
+                        st.download_button(
+                            label="📥 加工データをダウンロード",
+                            data=zip_buffer,
+                            file_name="加工データ.zip",
+                            mime="application/zip"
+                        )
+                        st.success("✅ データを作成しました")
+                    else:
+                        st.warning("データの作成に失敗しました")
