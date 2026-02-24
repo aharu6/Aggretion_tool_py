@@ -247,6 +247,7 @@ def View():
             
             st.divider()
             st.markdown("オプションを選択してください")
+            st.divider()
             
             st.sidebar.markdown("期間選択")
             date_range = st.sidebar.date_input("日付範囲を選択してください",[])
@@ -254,10 +255,11 @@ def View():
                 date_range=date_range,locate_select=None,name_select=None)
             
             change_name = 0
-            st.toggle(label="名前の変更",key="rename_toggle",value=False)
+            st.write("名前を番号へ変換し、匿名化を行います")
+            st.toggle(label="名前の匿名化",key="rename_toggle",value=False)
             if st.session_state.rename_toggle:
                 change_name = 1
-            st.subheader("加工データの作成とダウンロード")
+            st.markdown("加工データの作成とダウンロード")
             if st.button("加工データを作成",key="create_tidy_data"):
                 with st.spinner("データを加工中..."):
                     tidy_df,name_mapping_df = tidy_data(filtered_data,combined_data,change_name)
