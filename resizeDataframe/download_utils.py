@@ -21,7 +21,7 @@ def get_japanese_font():
         return 'Noto Sans CJK JP, IPAexGothic, sans-serif'
 
 
-def create_df_download_package(df):
+def create_df_download_package(df,name_mapping_df=None):
     """
     データフレームをZIPファイルにまとめる
     excel形式とcsv形式両方を保存する
@@ -41,6 +41,13 @@ def create_df_download_package(df):
                 df.to_csv(ccsv_buffer, index=False)
                 zip_file.writestr('結合データ.csv', ccsv_buffer.getvalue())
                 
+                if name_mapping_df is not None and not name_mapping_df.empty:
+                    name_mapping_df_buffer = BytesIO()
+                    with pd.ExcelWriter(name_mapping_df_buffer,engine='openpyxl') as write:
+                        name_mapping_df.to_excel(write,index=False,sheet_name='名前と番号の対応表')
+                    name_mapping_df_buffer.seek(0)
+                    zip_file.writestr('名前と番号の対応表.xlsx', name_mapping_df_buffer.getvalue())
+                    
             except Exception as e:
                 print(f"Error saving dataframe: {e}")
     zip_buffer.seek(0)

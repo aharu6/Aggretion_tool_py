@@ -260,10 +260,10 @@ def View():
             st.subheader("加工データの作成とダウンロード")
             if st.button("加工データを作成",key="create_tidy_data"):
                 with st.spinner("データを加工中..."):
-                    tidy_df = tidy_data(filtered_data,combined_data,change_name)
+                    tidy_df,name_mapping_df = tidy_data(filtered_data,combined_data,change_name)
                     st.dataframe(tidy_df.head())
                     if tidy_df is not None and not tidy_df.empty:
-                        zip_buffer = create_df_download_package(tidy_df)
+                        zip_buffer = create_df_download_package(tidy_df,name_mapping_df)
                         st.download_button(
                             label="📥 加工データをダウンロード",
                             data=zip_buffer,

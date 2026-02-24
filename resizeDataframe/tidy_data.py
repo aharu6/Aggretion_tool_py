@@ -14,8 +14,9 @@ def tidy_data(filtered_df,combined_df,change_name):
         name_mapping = {name: idx for idx,name in enumerate(df["phName"].unique())}
         df["phName"] = df["phName"].map(name_mapping)
         #名前と番号の対応表を作成
-        return df
+        name_mapping_df = pd.DataFrame(list(name_mapping.items()),columns=["薬剤師名","対応番号"])
+        return df, name_mapping_df
     else:
-        return df
+        return df, None
     
     
