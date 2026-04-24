@@ -4,9 +4,8 @@ class GroupByTaskCount:
     def __init__(self, dataframe):
         self.dataframe = dataframe
 
-    def group_by_task_count(self, locate_select, name_select, date_range):
+    def group_by_task_count(self, locate_select, name_select, date_range,taskname_tydir):
         df = self.dataframe
-        print(df['locate'])
         conditions = []
         if locate_select:
             df = df[df['locate'].apply(lambda x:any(loc in x for loc in locate_select))]
@@ -27,5 +26,8 @@ class GroupByTaskCount:
                 combined_condition &= condition
             df = df[combined_condition]
                     
+        if taskname_tydir==True:
+            print(f"taskname_tydir is {taskname_tydir}")
+            
         return df
             

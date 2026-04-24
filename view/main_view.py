@@ -128,8 +128,10 @@ def View():
             date_range = st.sidebar.date_input("日付範囲を選択してください",[])
             #task_記録された回数
             #名前や期間で絞り込みあれば反映する
+            #TODO:旧ツールの業務名で新ツールのデータを統一する
+            taskname_tydir=st.toggle(label="旧ツールの業務名で統一",key="taskname_tpggle",value=False)
             filtered_data=GroupByTaskCount(combined_data).group_by_task_count(
-                date_range=date_range,locate_select=locate_select,name_select=name_select)
+                date_range=date_range,locate_select=locate_select,name_select=name_select,taskname_tydir=taskname_tydir)
             st.subheader("各タスクの合計時間")
             total_time_per_task(filtered_data,combined_data)
             st.markdown("業務内容ごとの件数と1件あたりの時間")
@@ -155,8 +157,9 @@ def View():
             date_range = st.sidebar.date_input("日付範囲を選択してください",[])
             #task_記録された回数
             #名前や期間で絞り込みあれば反映する
+            taskname_tydir=st.toggle(label="旧ツールの業務名で統一",key="taskname_tpggle",value=False)
             filtered_data=GroupByTaskCount(combined_data).group_by_task_count(
-                date_range=date_range,locate_select=locate_select,name_select=name_select)
+                date_range=date_range,locate_select=locate_select,name_select=name_select,taskname_tydir=taskname_tydir )
             
             st.subheader("病棟ごとの集計")
             componentChart_location(filtered_data,combined_data)
@@ -170,8 +173,9 @@ def View():
         elif slider == "業務別分析":
             st.sidebar.markdown("期間選択")
             date_range = st.sidebar.date_input("日付範囲を選択してください",[])
+            taskname_tydir=st.toggle(label="旧ツールの業務名で統一",key="taskname_tpggle",value=False)
             filtered_data= GroupByTaskCount(combined_data).group_by_task_count(
-                date_range=date_range,locate_select=None,name_select=None)
+                date_range=date_range,locate_select=None,name_select=None,taskname_tydir=taskname_tydir )
             #絞り込みは日付のみ
             st.sidebar.markdown("結合結果のプレビュー")
             if filtered_data is not None:
@@ -246,13 +250,14 @@ def View():
             st.text("結合されたデータフレームを加工してダウンロードできます")
             
             st.divider()
-            st.markdown("オプションを選択してください")
+            st.markdown("オうプションを選択してください")
             st.divider()
             
             st.sidebar.markdown("期間選択")
             date_range = st.sidebar.date_input("日付範囲を選択してください",[])
+            taskname_tydir=st.toggle(label="旧ツールの業務名で統一",key="taskname_tpggle",value=False)
             filtered_data= GroupByTaskCount(combined_data).group_by_task_count(
-                date_range=date_range,locate_select=None,name_select=None)
+                date_range=date_range,locate_select=None,name_select=None,taskname_tydir=taskname_tydir )
             
             change_name = 0
             st.write("名前を番号へ変換し、匿名化を行います")
