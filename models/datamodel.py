@@ -1,4 +1,4 @@
-class datamodel:
+class Datamodel:
     def __init__(self):
         pass
     
