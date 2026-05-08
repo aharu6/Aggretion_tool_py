@@ -129,7 +129,7 @@ def View():
             #task_記録された回数
             #名前や期間で絞り込みあれば反映する
             #旧ツールの業務名で新ツールのデータを統一する
-            #TODO:件数を統一した動作に変更する
+            #件数を統一した動作に変更する
             taskname_tydir=st.toggle(label="旧ツールの業務名で統一",key="taskname_tpggle",value=False)
             filtered_data=GroupByTaskCount(combined_data).group_by_task_count(
                 date_range=date_range,locate_select=locate_select,name_select=name_select,taskname_tydir=taskname_tydir)
@@ -229,7 +229,10 @@ def View():
             st.divider()
             st.markdown("服薬指導+記録作成")
             Medication_Guidance_Record_Creation(filtered_data,combined_data)#グラフとデータフレーム
-            #データフレームは件数と１けんあたりの時間のみ
+            st.markdown("初回・中間指導情報収集")
+            Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name = "初回・中間指導情報収集")#グラフとデータフレーム,件数、1件あたりの時間
+            st.markdown("退院指導情報収集")
+            Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name = "退院指導情報収集")#グラフとデータフレーム,件数,1件あたりの時間
             st.divider()
             st.markdown("無菌調整関連業務")#個人ごとの時間
             clean_preparation(filtered_data,combined_data)
