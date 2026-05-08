@@ -128,7 +128,8 @@ def View():
             date_range = st.sidebar.date_input("日付範囲を選択してください",[])
             #task_記録された回数
             #名前や期間で絞り込みあれば反映する
-            #TODO:旧ツールの業務名で新ツールのデータを統一する
+            #旧ツールの業務名で新ツールのデータを統一する
+            #TODO:件数を統一した動作に変更する
             taskname_tydir=st.toggle(label="旧ツールの業務名で統一",key="taskname_tpggle",value=False)
             filtered_data=GroupByTaskCount(combined_data).group_by_task_count(
                 date_range=date_range,locate_select=locate_select,name_select=name_select,taskname_tydir=taskname_tydir)
