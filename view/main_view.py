@@ -30,6 +30,7 @@ from resizeDataframe.drawChart import (
     self_task_ratio,
     collect_all_charts_data,
     collect_about_chart,
+    Trolley_check,
 )
 from resizeDataframe.location_charts import (
     collect_location_charts_data,
@@ -229,10 +230,17 @@ def View():
             st.divider()
             st.markdown("服薬指導+記録作成")
             Medication_Guidance_Record_Creation(filtered_data,combined_data)#グラフとデータフレーム
+            st.markdown("服薬指導")
+            Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name="服薬指導")#グラフとデータフレーム
+            st.markdown("指導記録作成")
+            Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name="指導記録作成")#グラフとデータフレーム
             st.markdown("初回・中間指導情報収集")
             Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name = "初回・中間指導情報収集")#グラフとデータフレーム,件数、1件あたりの時間
             st.markdown("退院指導情報収集")
             Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name = "退院指導情報収集")#グラフとデータフレーム,件数,1件あたりの時間
+            st.divider()
+            st.markdown("注射台車鑑査")
+            Trolley_check(filtered_data,combined_data)#注射台車鑑査
             st.divider()
             st.markdown("無菌調整関連業務")#個人ごとの時間
             clean_preparation(filtered_data,combined_data)

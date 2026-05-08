@@ -384,7 +384,14 @@ def Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name=No
     st.dataframe(df[['phName','count_sum','time_per_count']],column_config={'phName':'薬剤師名','count_sum':'総件数','time_per_count':'1件あたりの時間(min)'})
 
 
-
+def Trolley_check(filtered_data,combined_data):#台車鑑査
+    fig,df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
+        task_name='注射台車鑑査',colors=False
+    )
+    st.plotly_chart(fig,key="Trolley_check_chart")
+    if (df['time_per_count'] == float('inf')).any():
+        st.info("1件あたりの時間が算出できないデータがあります。件数が0の可能性があります。")
+    st.dataframe(df[['phName','count_sum','time_per_count']],column_config={'phName':'薬剤師名','count_sum':'総件数','time_per_count':'1件あたりの時間(min)'})
 
 import plotly.express as px
 import pandas as pd
