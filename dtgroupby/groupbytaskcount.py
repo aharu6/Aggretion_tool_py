@@ -45,9 +45,24 @@ class GroupByTaskCount:
                     
         if taskname_tydir==True:
             #新データの業務名を旧データの業務名へ統一
+            #問い合わせ応需カウンターはそのまま
             di_mask = df['locate'].apply(lambda x: has_location(x, 'DI'))
             normalize_task_mask = df['task'].isin(['問い合わせ業務', 'その他の職種からの相談'])
             df.loc[di_mask & normalize_task_mask,'task'] = '問い合わせ応需'
+            """新→旧へ直した時の件数の統一"""
+            #"服薬指導":"服薬指導＋指導記録作成", "指導記録作成": "服薬指導＋指導記録作成",
+            #件数は指導記録作成の方で統一する,服薬指導の方は0にする
+            df.loc[df['task']=='服薬指導','count'] = 0
+            
+            #"無菌調製(調製者)": "無菌調製関連業務",E "無菌調製補助業務（準備、鑑査）": "無菌調製関連業務",
+            #件数は無菌調製(調製者)の方で統一する
+            df.loc[df['task']=='無菌調製補助業務（準備、鑑査）','count'] = 0
+            
+            #"薬剤セット": "薬剤セット・確認", "薬剤セット確認": "薬剤セット・確認",
+            #件数は薬剤セットの方で統一する
+            df.loc[df['task']=='薬剤セット確認','count'] = 0
+            
+            
             df['task'] = df['task'].map(self.model).fillna(df['task'])
             #locate=DIにおけるtask=="問い合わせ業務"をtask=="問い合わせ応需"へ変更
             print(df)
