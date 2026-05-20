@@ -30,6 +30,8 @@ from resizeDataframe.drawChart import (
     self_task_ratio,
     collect_all_charts_data,
     collect_about_chart,
+    normal_chart,
+    operoom_chart,
 )
 from resizeDataframe.location_charts import (
     collect_location_charts_data,
@@ -129,7 +131,7 @@ def View():
             #task_記録された回数
             #名前や期間で絞り込みあれば反映する
             #旧ツールの業務名で新ツールのデータを統一する
-            #TODO:件数を統一した動作に変更する
+            #件数を統一した動作に変更する
             taskname_tydir=st.toggle(label="旧ツールの業務名で統一",key="taskname_tpggle",value=False)
             filtered_data=GroupByTaskCount(combined_data).group_by_task_count(
                 date_range=date_range,locate_select=locate_select,name_select=name_select,taskname_tydir=taskname_tydir)
@@ -229,20 +231,59 @@ def View():
             st.divider()
             st.markdown("服薬指導+記録作成")
             Medication_Guidance_Record_Creation(filtered_data,combined_data)#グラフとデータフレーム
-            #データフレームは件数と１けんあたりの時間のみ
+            st.markdown("服薬指導")
+            Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name="服薬指導")#グラフとデータフレーム
+            st.markdown("指導記録作成")
+            Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name="指導記録作成")#グラフとデータフレーム
+            st.markdown("初回・中間指導情報収集")
+            Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name = "初回・中間指導情報収集")#グラフとデータフレーム,件数、1件あたりの時間
+            st.markdown("退院指導情報収集")
+            Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name = "退院指導情報収集")#グラフとデータフレーム,件数,1件あたりの時間
+            st.divider()
+            st.markdown("注射台車鑑査")
+            normal_chart(filtered_data,combined_data,task_name="注射台車鑑査")#注射台車鑑査
             st.divider()
             st.markdown("無菌調整関連業務")#個人ごとの時間
             clean_preparation(filtered_data,combined_data)
+            st.markdown("無菌調製(調製者)")
+            clean_preparation(filtered_data,combined_data,task_name="無菌調製(調製者)")
+            st.markdown("無菌調製補助業務（準備、鑑査）")
+            clean_preparation(filtered_data,combined_data,task_name="無菌調製補助業務（準備、鑑査）")
             st.divider()
             st.markdown("薬剤セット確認")#個人ごとの、総時間、グラフ描画
             drag_set_check(filtered_data,combined_data)
+            st.markdown("薬剤セット")
+            drag_set_check(filtered_data,combined_data,task_name="薬剤セット")
+            st.markdown("薬剤セット確認")
+            drag_set_check(filtered_data,combined_data,task_name="薬剤セット確認")
             st.divider()
             st.markdown("薬剤使用状況の把握等(情報収集)")#個人ごとの件数と１けんあたりの時間を並列棒グラフ
             research_info_chart(filtered_data,combined_data)
             #TODO:別途データフレームで件数、総時間、１件あたりの時間
             st.divider()
+            st.markdown("薬剤サマリー作成")
+            normal_chart(filtered_data,combined_data,task_name="薬剤サマリー作成")#グラフとデータフレーム,件数、1件あたりの時間(min)
+            st.divider()
+            st.markdown("処方代理修正・代行入力")
+            normal_chart(filtered_data,combined_data,task_name="処方代理修正・代行入力")#グラフとデータフレーム,件数、1件あたりの時間(min)
+            st.divider()
+            st.markdown("問い合わせ業務")
+            normal_chart(filtered_data,combined_data,task_name="問い合わせ業務")#グラフとデータフレーム,件数、1件あたりの時間(min)
+            st.divider()
+            st.markdown("ICT")
+            normal_chart(filtered_data,combined_data,task_name="ICT")#グラフとデータフレーム,件数、1件あたりの時間(min)
+            st.markdown("AST")
+            normal_chart(filtered_data,combined_data,task_name="AST")#グラフとデータフレーム,件数、1件あたりの時間(min)
+            st.divider()
             st.markdown("褥瘡")#個人ごとの、総時間、グラフ描画
             Jokusou_chart(filtered_data,combined_data)
+            
+            st.divider()
+            st.markdown("手術後使用薬剤確認")
+            normal_chart(filtered_data,combined_data,task_name="手術後使用薬剤確認")#グラフとデータフレーム,件数、1件あたりの時間(min)
+            st.markdown("手術室サテライト薬剤定数確認")
+            operoom_chart(filtered_data,combined_data)#グラフとデータフレーム,1件あたりの時間(min),件数なし
+            
             
             # 一括ダウンロードボタン
             downlad_handler(collect_all_charts_data,filtered_data,combined_data)

@@ -368,11 +368,13 @@ def Recept_Agent_Modification(filtered_data,combined_data): #件数、総時間�
     st.plotly_chart(fig,key="Recept_Agent_Modification_chart")
     
 #TODO:病棟関係ない業務を排除できるボタンを作成、グラフ表示をきりかえる
-def Medication_Guidance_Record_Creation(filtered_data,combined_data):
+def Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name=None):
+    if task_name is None:
+        task_name = '服薬指導＋指導記録作成'
     fig,df=ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
-        task_name='服薬指導＋指導記録作成',colors=False
+        task_name=task_name,colors=False
     )
-    st.plotly_chart(fig,key="Medication_Guidance_Record_Creation_chart")
+    st.plotly_chart(fig,key=f"Medication_Guidance_Record_Creation_chart_{task_name}")
     if df.empty:
         st.info("該当データが存在しません。")
         return
@@ -382,20 +384,35 @@ def Medication_Guidance_Record_Creation(filtered_data,combined_data):
     st.dataframe(df[['phName','count_sum','time_per_count']],column_config={'phName':'薬剤師名','count_sum':'総件数','time_per_count':'1件あたりの時間(min)'})
 
 
+def normal_chart(filtered_data,combined_data,task_name=None):#台車鑑査,件数 、1件あたりの時間、グラフ描画
+    fig,df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
+        task_name='注射台車鑑査',colors=False
+    )
+    st.plotly_chart(fig,key="Trolley_check_chart")
+    if df.empty:
+        st.info("該当データが存在しません。")
+        return
 
+    if (df['time_per_count'] == float('inf')).any():
+        st.info("1件あたりの時間が算出できないデータがあります。件数が0の可能性があります。")
+    st.dataframe(df[['phName','count_sum','time_per_count']],column_config={'phName':'薬剤師名','count_sum':'総件数','time_per_count':'1件あたりの時間(min)'})
 
 import plotly.express as px
 import pandas as pd
 
-def clean_preparation(filtered_data,combined_data):
+def clean_preparation(filtered_data,combined_data,task_name=None):
+    if task_name is None:
+        task_name = '無菌調製関連業務'
     df = ChartDataExtractor(filtered_data,combined_data).extract_task_data(
-        task_name='無菌調製関連業務',to_hours=False)
+        task_name=task_name,to_hours=False)
     fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'})
     st.plotly_chart(fig,key="clean_preparation_chart")
 
-def drag_set_check(filtered_data,combined_data):
+def drag_set_check(filtered_data,combined_data,task_name=None):
+    if task_name is None:
+        task_name = '薬剤セット・確認'
     df =ChartDataExtractor(filtered_data=filtered_data,
-                        combined_data=combined_data).extract_task_data(task_name='薬剤セット・確認',to_hours=False)
+                        combined_data=combined_data).extract_task_data(task_name=task_name,to_hours=False)
     fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'})
     st.plotly_chart(fig,key="drag_set_check_chart")
 
@@ -418,6 +435,10 @@ def Jokusou_chart(filtered_data,combined_data):
     fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'})
     st.plotly_chart(fig,key="Jokusou_chart")
         
+def operoom_chart(filtered_data,combined_data):
+    df = ChartDataExtractor(filtered_data=filtered_data).extract_task_data(task_name='手術室サテライト薬剤定数確認',to_hours=False)
+    fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'})
+    st.plotly_chart(fig,key="operroom_count_chart")
 
 
 def collect_all_charts_data(filtered_data, combined_data):
