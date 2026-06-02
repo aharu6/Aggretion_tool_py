@@ -246,7 +246,7 @@ def View():
             st.markdown("無菌調整関連業務")#個人ごとの時間
             clean_preparation(filtered_data,combined_data)
             st.markdown("無菌調製(調製者)")
-            clean_preparation(filtered_data,combined_data,task_name="無菌調製(調製者)")
+            clean_preparation(filtered_data,combined_data,task_name="無菌調製(調製者)")#個人ごとの、総時間、グラフ描画
             st.markdown("無菌調製補助業務（準備、鑑査）")
             clean_preparation(filtered_data,combined_data,task_name="無菌調製補助業務（準備、鑑査）")
             st.divider()
