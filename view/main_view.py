@@ -13,16 +13,11 @@ from resizeDataframe.drawChart import (
     Calculate_TDM,
     Calculate_TPN,
     Calculate_WG,
-    Calculate_confa,
     Calculate_conference,
-    Calculate_other_consultation,
-    Calculate_doctor_consultation,
-    Calculate_nurse_consultation,
     total_time_per_task,
     Manegment_time,
     Adjustment_work,
     Check_Medication,
-    Recept_Agent_Modification,
     clean_preparation,
     drag_set_check,
     research_info_chart,
@@ -202,20 +197,9 @@ def View():
             st.markdown("WG活動")
             Calculate_WG(filtered_data,combined_data)
             st.divider()
-            st.markdown("カンファ・ラウンド")
-            Calculate_confa(filtered_data,combined_data)
-            st.divider()
             st.markdown("カンファレンス")
             Calculate_conference(filtered_data,combined_data)
             st.divider()
-            st.markdown("その他の職種からの相談")
-            Calculate_other_consultation(filtered_data,combined_data)
-            st.divider()
-            st.markdown("医師からの相談")
-            Calculate_doctor_consultation(filtered_data,combined_data)
-            st.divider()
-            st.markdown("看護師からの相談")
-            Calculate_nurse_consultation(filtered_data,combined_data)
             st.divider()
             st.markdown("管理業務")#TODO:個人ごとの総時間グラフ
             Manegment_time(filtered_data,combined_data)
@@ -225,9 +209,6 @@ def View():
             st.divider()
             st.markdown("持参薬を確認")#件数、総時間、１けんあたりの時間、グラフ描画必要
             Check_Medication(filtered_data,combined_data)
-            st.divider()
-            st.markdown("処方代理修正")#件数、総時間、１けんあたりの時間、グラフ描画
-            Recept_Agent_Modification(filtered_data,combined_data)
             st.divider()
             st.markdown("服薬指導+記録作成")
             Medication_Guidance_Record_Creation(filtered_data,combined_data)#グラフとデータフレーム
@@ -250,8 +231,6 @@ def View():
             st.markdown("無菌調製補助業務（準備、鑑査）")
             clean_preparation(filtered_data,combined_data,task_name="無菌調製補助業務（準備、鑑査）")
             st.divider()
-            st.markdown("薬剤セット確認")#個人ごとの、総時間、グラフ描画
-            drag_set_check(filtered_data,combined_data)
             st.markdown("薬剤セット")
             drag_set_check(filtered_data,combined_data,task_name="薬剤セット")
             st.markdown("薬剤セット確認")

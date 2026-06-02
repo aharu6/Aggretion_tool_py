@@ -317,30 +317,6 @@ def Calculate_conference(filtered_data,combined_data):
     fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'})
     st.plotly_chart(fig,key="Calculate_conference_chart")
 
-
-def Calculate_other_consultation(filtered_data,combined_data):
-    fig,df = ChartDataExtractor(filtered_data=filtered_data,
-                                combined_data=combined_data)._create_count_chart_data(
-                                    task_name='その他の職種からの相談',colors=False
-                                )
-    st.plotly_chart(fig,key = "TDM_chart")
-
-def Calculate_doctor_consultation(filtered_data,combined_data):
-    fig,df = ChartDataExtractor(filtered_data=filtered_data,
-                                combined_data=combined_data)._create_count_chart_data(
-                                    task_name='医師からの相談',colors=False
-                                )
-    st.plotly_chart(fig,key = "doctor_consultation_chart")
-
-
-def Calculate_nurse_consultation(filtered_data,combined_data):
-    fig,df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
-        task_name='看護師からの相談',colors=False
-    )
-    st.plotly_chart(fig,key="nurse_consultation_chart")
-
-
-
 def Manegment_time(filtered_data,combined_data):
     df = ChartDataExtractor(filtered_data=filtered_data,
                             combined_data=combined_data).extract_task_data(task_name='管理業務',to_hours=True)
@@ -361,11 +337,6 @@ def Check_Medication(filtered_data,combined_data):
     st.plotly_chart(fig,key = "Check_Medication_chart")
 
 
-def Recept_Agent_Modification(filtered_data,combined_data): #件数、総時間、１けんあたりの時間、グラフ描画
-    fig,df =ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
-        task_name='処方代理修正',colors=False
-    )
-    st.plotly_chart(fig,key="Recept_Agent_Modification_chart")
     
 #TODO:病棟関係ない業務を排除できるボタンを作成、グラフ表示をきりかえる
 def Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name=None):
