@@ -388,7 +388,7 @@ def normal_chart(filtered_data,combined_data,task_name=None):#台車鑑査,件�
     fig,df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
         task_name='注射台車鑑査',colors=False
     )
-    st.plotly_chart(fig,key="Trolley_check_chart")
+    st.plotly_chart(fig,key=f"fTrolley_check_chart_{task_name}")
     if df.empty:
         st.info("該当データが存在しません。")
         return
@@ -406,7 +406,7 @@ def clean_preparation(filtered_data,combined_data,task_name=None):
     df = ChartDataExtractor(filtered_data,combined_data).extract_task_data(
         task_name=task_name,to_hours=False)
     fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'})
-    st.plotly_chart(fig,key="clean_preparation_chart")
+    st.plotly_chart(fig,key=f"clean_preparation_chart_{task_name}")
 
 def drag_set_check(filtered_data,combined_data,task_name=None):
     if task_name is None:
@@ -414,7 +414,7 @@ def drag_set_check(filtered_data,combined_data,task_name=None):
     df =ChartDataExtractor(filtered_data=filtered_data,
                         combined_data=combined_data).extract_task_data(task_name=task_name,to_hours=False)
     fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'})
-    st.plotly_chart(fig,key="drag_set_check_chart")
+    st.plotly_chart(fig,key=f"drag_set_check_chart_{task_name}")
 
 import plotly.graph_objects as go
 
@@ -436,7 +436,7 @@ def Jokusou_chart(filtered_data,combined_data):
     st.plotly_chart(fig,key="Jokusou_chart")
         
 def operoom_chart(filtered_data,combined_data):
-    df = ChartDataExtractor(filtered_data=filtered_data).extract_task_data(task_name='手術室サテライト薬剤定数確認',to_hours=False)
+    df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data).extract_task_data(task_name='手術室サテライト薬剤定数確認',to_hours=False)
     fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'})
     st.plotly_chart(fig,key="operroom_count_chart")
 
