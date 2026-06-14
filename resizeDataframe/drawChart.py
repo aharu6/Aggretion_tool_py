@@ -28,6 +28,7 @@ class ChartDataExtractor:
         df = df[df['task'] ==task_name]
         df = df.groupby('phName').size().reset_index(name='count')
         time_label = 'time_hr' if to_hours else 'time_min'
+            
         df[time_label] = _calculate_time(df['count'],to_hours)
         fig = go.Figure(
             data=[
@@ -36,6 +37,10 @@ class ChartDataExtractor:
                     x=df['phName'],y=df[time_label],
                     marker_color=TASK_COLOR_MAP.get(task_name))
             ]
+        )
+        fig.update_layout(
+            xaxis_title="薬剤師名",
+            yaxis_title="総時間(hr)" if to_hours else "総時間(min)",
         )
         total_df = df.agg({'count': 'sum', time_label: 'sum'}).to_frame().T
         """df['phName':薬剤師名,'count','time_hr' or 'time_min']"""
