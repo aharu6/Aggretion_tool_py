@@ -181,14 +181,23 @@ def View():
                 st.divider()
                 st.markdown(f"{task}")
                 definition = task_definitions.get(task, {})
-                count_task_chart(filtered_data,combined_data,task_name=task,
-                                show_dataframe=definition.get("show_dataframe", False),
-                                chart_key=definition.get("chart_key", None),
-                                chart=definition.get("chart", True),
-                                to_hours=definition.get("to_hours", False),
-                                show_total=definition.get("show_total", False)
-                                )
-            
+                chart_type = definition.get("chart_func", "count_task_chart")
+                if chart_type == "simple_task_time_chart":
+                    simple_task_time_chart(filtered_data, combined_data,
+                                        task_name=task, 
+                                        to_hours=definition.get('to_hours', False), 
+                                        chart_key=definition.get('chart_key', None)
+                                        )
+                elif chart_type == "count_task_chart":
+                    count_task_chart(filtered_data,combined_data,
+                                    task_name=task,
+                                    show_dataframe=definition.get("show_dataframe", False),
+                                    chart_key=definition.get("chart_key", None),
+                                    chart=definition.get("chart", True),
+                                    to_hours=definition.get("to_hours", False),
+                                    show_total=definition.get("show_total", False)
+                                    )
+                
             
             # 一括ダウンロードボタン
             downlad_handler(collect_all_charts_data,filtered_data,combined_data,task_list=task_list)

@@ -200,7 +200,7 @@ class Task_list:
                     "chart_key":"operroom_count_chart",
                 },
                 "薬剤使用期限確認":{
-                    "chart_func":"count_task_chart",
+                    "chart_func":"simple_task_time_chart",
                     "task_name":"薬剤使用期限確認",
                     "show_dataframe":False,
                     "chart":True,
@@ -222,7 +222,7 @@ class Task_list:
                     "chart":True,
                 },
                 "その他":{
-                    "chart_func":"count_task_chart",
+                    "chart_func":"simple_task_time_chart",
                     "task_name":"その他",
                     "show_dataframe":False,
                     "chart":True,
@@ -231,7 +231,7 @@ class Task_list:
                 "薬剤服用歴等について保険薬局へ照会":{
                     "chart_func":"count_task_chart",
                     "task_name":"薬剤服用歴等について保険薬局へ照会",
-                    "show_dataframe":False,
+                    "show_dataframe":True,
                     "chart":True,
                     "chart_key":"Pharmacy_inquiry_chart",
                 },
@@ -396,20 +396,6 @@ class Task_list:
                     "show_dataframe":False,
                     "chart":True,
                 },
-                "手術使用薬剤確認・補充":{
-                    "chart_func":"simple_task_time_chart",
-                    "task_name":"手術使用薬剤確認・補充",
-                    "chart_key":"Surgical_medication_check_and_replenishment_chart",
-                    "show_dataframe":False,
-                    "chart":True,
-                },
-                "医療安全対策WG活動":{
-                    "chart_func":"simple_task_time_chart",
-                    "task_name":"医療安全対策WG活動",
-                    "chart_key":"Medical_safety_WG_chart",
-                    "show_dataframe":False,
-                    "chart":True,
-                },
                 "マスター作成・変更":{
                     "chart_func":"simple_task_time_chart",
                     "task_name":"マスター作成・変更",
@@ -494,6 +480,5 @@ class Task_list:
                     "chart_key":"Medical_safety_WG_chart",
                     "show_dataframe":False,
                     "chart":True,
-                }
-                
+                }   
             }

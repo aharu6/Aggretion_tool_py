@@ -29,7 +29,17 @@ class ChartDataExtractor:
         df = df.groupby('phName').size().reset_index(name='count')
         time_label = 'time_hr' if to_hours else 'time_min'
         df[time_label] = _calculate_time(df['count'],to_hours)
-        return df
+        fig = go.Figure(
+            data=[
+                go.Bar(
+                    name="総時間(hr)" if to_hours else "総時間(min)",
+                    x=df['phName'],y=df[time_label],
+                    marker_color=TASK_COLOR_MAP.get(task_name))
+            ]
+        )
+        total_df = df.agg({'count': 'sum', time_label: 'sum'}).to_frame().T
+        """df['phName':薬剤師名,'count','time_hr' or 'time_min']"""
+        return fig,df,total_df
     
     def _create_count_chart_data(self,task_name=False,colors=False,
                                 to_hours=False):
@@ -59,8 +69,9 @@ class ChartDataExtractor:
             xaxis_title="薬剤師名",
             yaxis_title="件数(件)/1件あたりの時間(hr)" if to_hours else "件数(件)/1件あたりの時間(min)",
         )
+        total_df = df.agg({'count_sum': 'sum', 'time': 'sum'}).to_frame().T
         """df['phName':薬剤師名,'count_sum','time','time_per_count']"""
-        return fig,df
+        return fig,df,total_df
     
 
 """--各タスクの合計時間--"""
@@ -82,7 +93,7 @@ def total_time_per_task(filtered_data,combined_data):
     
 """---業務内容ごとの件数と1件あたりの時間---"""
 def count_task(filtered_data,combined_data):
-    fig,df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
+    fig,df,total_df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
         task_name=False,colors=False
     )
     st.plotly_chart(fig,key="count_task_chart") 
@@ -163,7 +174,7 @@ def self_task_ratio(filtered_data,combined_data):
     
 """--個人ごとの集計 ・時間・件数・1件あたりの時間--"""
 def create_time_count_avg(filtered_data,combined_data):
-    fig,df  = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
+    fig,df,total_df  = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
         task_name=False,colors=False
     )
     #record_countは不要なので削除
@@ -201,22 +212,17 @@ def time_count_avg(filtered_data,combined_data):
 """--汎用グラフ関数--"""
 def simple_task_time_chart(filtered_data, combined_data, task_name, to_hours=False, chart_key=None):
     """extract_task_data + px.bar の共通処理をまとめた汎用関数"""
-    df = ChartDataExtractor(filtered_data, combined_data).extract_task_data(
+    fig,df,total_df = ChartDataExtractor(filtered_data, combined_data).extract_task_data(
         task_name=task_name, to_hours=to_hours
     )
     time_col = 'time_hr' if to_hours else 'time_min'
     time_label = '総時間(hr)' if to_hours else '総時間(min)'
-    fig = px.bar(
-        data_frame=df,
-        x='phName',
-        y=time_col,
-        labels={'phName': '薬剤師名', time_col: time_label},
-    )
+    
     key = chart_key if chart_key else f"simple_task_time_chart_{task_name}"
     st.plotly_chart(fig, key=key)
 
 
-def count_task_chart(filtered_data, combined_data, task_name,chart_key=None, show_dataframe=False, show_total=False, chart=False,to_hours=False,):
+def count_task_chart(filtered_data, combined_data, task_name=None,chart_key=None, show_dataframe=False, show_total=False, chart=False,to_hours=False,):
     """_create_count_chart_data + 表示処理をまとめた汎用関数
     - task_name: 対象の業務名
     - chart_key: Streamlitのチャートに渡すキー（省略時は自動生成）
@@ -229,7 +235,7 @@ def count_task_chart(filtered_data, combined_data, task_name,chart_key=None, sho
     time_col = 'time_hr' if to_hours else 'time_min'
     time_label = '総時間(hr)' if to_hours else '総時間(min)'
     
-    fig, df = ChartDataExtractor(filtered_data, combined_data)._create_count_chart_data(
+    fig, df, total_df = ChartDataExtractor(filtered_data, combined_data)._create_count_chart_data(
         task_name=task_name, colors=False,to_hours=to_hours
     )
     key = chart_key if chart_key else f"count_task_chart_{task_name}"
@@ -283,7 +289,7 @@ def collect_about_chart(filtered_data, combined_data):
         return fig,df
     
     def get_count_task():
-        fig,df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
+        fig,df,total_df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
         task_name=False,colors=False
     )
         return fig,df
@@ -345,11 +351,20 @@ def collect_all_charts_data(filtered_data, combined_data,task_list=None):
     # 各関数からデータを抽出（表示はせずにデータのみ取得）
     for task in task_list:
         definition = definitions.get(task, {})
-        print(f"Collecting data for task: {task}, definition: {definition}")  # デバッグ用ログ
-        data_functions.append((definition.get('chart_key', f"chart_{task}"), 
-                            lambda t=task: ChartDataExtractor(filtered_data, combined_data)._create_count_chart_data(
-            task_name=t, colors=PLOTLY_COLORS,to_hours=definition.get('to_hours', False),
-        )))
+        if definition.get('chart_func') == 'simple_task_time_chart':
+            data_functions.append(
+                (definition.get('task_name', f"chart_{task}"), 
+                lambda t=task: ChartDataExtractor(filtered_data, combined_data).extract_task_data(
+                    task_name=t, to_hours=definition.get('to_hours', False)
+                ))
+            )
+        elif definition.get('chart_func') == 'count_task_chart':
+            data_functions.append(
+                (definition.get('task_name', f"chart_{task}"), 
+                lambda t=task: ChartDataExtractor(filtered_data, combined_data)._create_count_chart_data(
+                    task_name=t, colors=PLOTLY_COLORS, to_hours=definition.get('to_hours', False)
+                )))
+    print("追加したタスクの関数:",data_functions)    
 
     for name, func in data_functions:
         try:
