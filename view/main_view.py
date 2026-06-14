@@ -117,6 +117,8 @@ def View():
             taskname_tydir=st.toggle(label="旧ツールの業務名で統一",key="taskname_tpggle",value=False)
             filtered_data=GroupByTaskCount(combined_data).group_by_task_count(
                 date_range=date_range,locate_select=locate_select,name_select=name_select,taskname_tydir=taskname_tydir)
+            #NAを含む行の除去
+            filtered_data = filtered_data.dropna(subset=['task'])
             st.subheader("各タスクの合計時間")
             total_time_per_task(filtered_data,combined_data)
             st.markdown("業務内容ごとの件数と1件あたりの時間")
@@ -145,7 +147,8 @@ def View():
             taskname_tydir=st.toggle(label="旧ツールの業務名で統一",key="taskname_tpggle",value=False)
             filtered_data=GroupByTaskCount(combined_data).group_by_task_count(
                 date_range=date_range,locate_select=locate_select,name_select=name_select,taskname_tydir=taskname_tydir )
-            
+            #NAを含む行の除去
+            filtered_data = filtered_data.dropna(subset=['task'])
             st.subheader("病棟ごとの集計")
             componentChart_location(filtered_data,combined_data)
             st.markdown("時間の合計")#locateごとに作成する
@@ -161,6 +164,9 @@ def View():
             taskname_tydir=st.toggle(label="旧ツールの業務名で統一",key="taskname_tpggle",value=False)
             filtered_data= GroupByTaskCount(combined_data).group_by_task_count(
                 date_range=date_range,locate_select=None,name_select=None,taskname_tydir=taskname_tydir )
+            #NAを含む行の除去
+            filtered_data = filtered_data.dropna(subset=['task'])
+            
             #絞り込みは日付のみ
             st.sidebar.markdown("結合結果のプレビュー")
             if filtered_data is not None:
@@ -200,6 +206,10 @@ def View():
             filtered_data= GroupByTaskCount(combined_data).group_by_task_count(
                 date_range=date_range,locate_select=None,name_select=None,taskname_tydir=taskname_tydir )
             
+            #NAを含む行の除去
+            check_na_drop = st.toggle(label="欠損値を含む行を削除",key="na_drop_toggle",value=False)
+            if check_na_drop:
+                filtered_data = filtered_data.dropna()
             change_name = 0
             st.write("名前を番号へ変換し、匿名化を行います")
             st.toggle(label="名前の匿名化",key="rename_toggle",value=False)

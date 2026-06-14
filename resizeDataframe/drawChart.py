@@ -43,18 +43,21 @@ class ChartDataExtractor:
         ).reset_index()
         df['time'] = df['size_count']*15
         if to_hours:
-            df['time'] = df['time'] / 60
+            df['time_hr'] = df['time'] / 60
+        else:
+            df['time_min'] = df['time']
+            
         df['time_per_count'] = df['time'] / df['count_sum']
         
         fig = go.Figure(
             data=[
                 go.Bar(name="件数(件)",x=df['phName'],y=df['count_sum'],marker_color=colors[0] if colors else None),
-                go.Bar(name="1件あたりの時間(min)",x=df['phName'],y=df['time_per_count'],marker_color=colors[1] if colors else None)
+                go.Bar(name="1件あたりの時間(hr)" if to_hours else "1件あたりの時間(min)",x=df['phName'],y=df['time_per_count'],marker_color=colors[1] if colors else None)
             ]
         )
         fig.update_layout(
             xaxis_title="薬剤師名",
-            yaxis_title="件数(件)/1件あたりの時間(min)",
+            yaxis_title="件数(件)/1件あたりの時間(hr)" if to_hours else "件数(件)/1件あたりの時間(min)",
         )
         """df['phName':薬剤師名,'count_sum','time','time_per_count']"""
         return fig,df
@@ -213,7 +216,7 @@ def simple_task_time_chart(filtered_data, combined_data, task_name, to_hours=Fal
     st.plotly_chart(fig, key=key)
 
 
-def count_task_chart(filtered_data, combined_data, task_name, chart_key=None, show_dataframe=False, show_total=False, chart=False,to_hours=False,):
+def count_task_chart(filtered_data, combined_data, task_name,chart_key=None, show_dataframe=False, show_total=False, chart=False,to_hours=False,):
     """_create_count_chart_data + 表示処理をまとめた汎用関数
     - task_name: 対象の業務名
     - chart_key: Streamlitのチャートに渡すキー（省略時は自動生成）
@@ -222,8 +225,8 @@ def count_task_chart(filtered_data, combined_data, task_name, chart_key=None, sh
     - chart: チャートを表示するか
     - to_hours: 時間を時間単位で表示するか（デフォルトは分単位）
     
-    """
-    time_col = 'time_hr' if to_hours else 'time'
+    """    
+    time_col = 'time_hr' if to_hours else 'time_min'
     time_label = '総時間(hr)' if to_hours else '総時間(min)'
     
     fig, df = ChartDataExtractor(filtered_data, combined_data)._create_count_chart_data(
@@ -253,16 +256,7 @@ def count_task_chart(filtered_data, combined_data, task_name, chart_key=None, sh
         st.markdown("全薬剤師合計")
         st.dataframe(total_df, column_config={'count_sum': '総件数', time_col: time_label})
     
-    if task_name=="TDM実施":
-        #薬剤師名関係なく、件数の合計
-        sumcount_df = df.agg({
-            'count_sum':'sum',
-            time_col:'sum'
-        }).to_frame().T
-        st.markdown("全薬剤師合計")
-        st.dataframe(sumcount_df,column_config={
-            'count_sum':'総件数',time_col:time_label})
-        
+    
 
 
 def collect_about_chart(filtered_data, combined_data):

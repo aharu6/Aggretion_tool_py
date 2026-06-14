@@ -5,16 +5,23 @@ class Task_list:
         
     def list(self):
         """
-        - 件数関係ない項目はdataframe==false
-
-        Returns:
-            _type_: _description_
+        - chart_func: チャート作成関数の名前
+        - task_name: 対象の業務名
+        - chart_key: Streamlitのチャートに渡すキー
+        - show_dataframe: データフレームを表示するか
+        - chart: チャートを表示するか
+        - show_total: 全体の合計を表示するか
+        - to_hours: 時間を時間単位で表示するか（デフォルトは分単位）   
         """
         return {
                 "1on1":{
                     "chart_func":"simple_task_time_chart",
                     "task_name":"1on1",
                     "chart_key":"Calculate_1on1_chart",
+                    "show_dataframe":False,
+                    "chart":True,
+                    "show_total":False,
+                    "to_hours":False,
                 },
                 "NST":{
                     "chart_func":"simple_task_time_chart",
@@ -27,6 +34,7 @@ class Task_list:
                     "chart_key":"Calculate_TDM_chart",
                     "show_dataframe":True,
                     "chart":True,
+                    "show_total":True,
                 },
                 "TPN評価":{
                     "chart_func":"count_task_chart",
@@ -34,6 +42,7 @@ class Task_list:
                     "chart_key":"Calculate_TPN_chart",
                     "show_dataframe":True,
                     "chart":False,
+                    "show_total":True,
                 },
                 "WG活動":{
                     "chart_func":"simple_task_time_chart",
@@ -380,5 +389,111 @@ class Task_list:
                     "show_dataframe":True,
                     "chart":True,
                 },   
+                "休憩":{
+                    "chart_func":"simple_task_time_chart",
+                    "task_name":"休憩",
+                    "chart_key":"Break_time_chart",
+                    "show_dataframe":False,
+                    "chart":True,
+                },
+                "手術使用薬剤確認・補充":{
+                    "chart_func":"simple_task_time_chart",
+                    "task_name":"手術使用薬剤確認・補充",
+                    "chart_key":"Surgical_medication_check_and_replenishment_chart",
+                    "show_dataframe":False,
+                    "chart":True,
+                },
+                "医療安全対策WG活動":{
+                    "chart_func":"simple_task_time_chart",
+                    "task_name":"医療安全対策WG活動",
+                    "chart_key":"Medical_safety_WG_chart",
+                    "show_dataframe":False,
+                    "chart":True,
+                },
+                "マスター作成・変更":{
+                    "chart_func":"simple_task_time_chart",
+                    "task_name":"マスター作成・変更",
+                    "chart_key":"Master_creation_and_modification_chart",
+                    "show_dataframe":True,
+                    "chart":True,
+                    
+                },
+                "薬剤情報評価":{
+                    "chart_func":"simple_task_time_chart",
+                    "task_name":"薬剤情報評価",
+                    "chart_key":"Drug_information_evaluation_chart",
+                    "show_dataframe":True,
+                    "chart":True,
+                },
+                "後発品選定":{
+                    "chart_func":"simple_task_time_chart",
+                    "task_name":"後発品選定",
+                    "chart_key":"Generic_drug_selection_chart",
+                    "show_dataframe":True,
+                    "chart":True,
+                },
+                "会議資料作成":{
+                    "chart_func":"simple_task_time_chart",
+                    "task_name":"会議資料作成",
+                    "chart_key":"Meeting_material_preparation_chart",
+                    "show_dataframe":True,
+                    "chart":True,
+                },
+                "配信資料作成":{
+                    "chart_func":"simple_task_time_chart",
+                    "task_name":"配信資料作成",
+                    "chart_key":"Distribution_material_preparation_chart",
+                    "show_dataframe":True,
+                    "chart":True,
+                },
+                "フォーミュラリー作成":{
+                    "chart_func":"simple_task_time_chart",
+                    "task_name":"フォーミュラリー作成",
+                    "chart_key":"Formulary_creation_chart",
+                    "show_dataframe":True,
+                    "chart":True,
+                },
+                "外来処方箋修正":{
+                    "chart_func":"count_task_chart",
+                    "task_name":"外来処方箋修正",
+                    "show_dataframe":True,
+                    "chart":True,
+                    "chart_key":"Outpatient_prescription_correction_chart",
+                },
+                "勉強会資料作成・開催":{
+                    "chart_func":"simple_task_time_chart",
+                    "task_name":"勉強会資料作成・開催",
+                    "chart_key":"Study_meeting_preparation_and_holding_chart",
+                    "show_dataframe":True,
+                    "chart":True,
+                },
+                "お役立ち情報作成":{
+                    "chart_func":"simple_task_time_chart",
+                    "task_name":"お役立ち情報作成",
+                    "chart_key":"Useful_information_creation_chart",
+                    "show_dataframe":True,
+                    "chart":True,
+                },
+                "麻酔科周術期外来情報収集":{
+                    "chart_func":"simple_task_time_chart",
+                    "task_name":"麻酔科周術期外来情報収集",
+                    "chart_key":"Anesthesia_perioperative_outpatient_info_chart",
+                    "show_dataframe":False,
+                    "chart":True,
+                },
+                "手術使用薬剤確認・補充":{
+                    "chart_func":"simple_task_time_chart",
+                    "task_name":"手術使用薬剤確認・補充",
+                    "chart_key":"Surgical_medication_check_and_replenishment_chart",
+                    "show_dataframe":False,
+                    "chart":True,
+                },
+                "医療安全対策WG活動":{
+                    "chart_func":"simple_task_time_chart",
+                    "task_name":"医療安全対策WG活動",
+                    "chart_key":"Medical_safety_WG_chart",
+                    "show_dataframe":False,
+                    "chart":True,
+                }
                 
             }
