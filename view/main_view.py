@@ -22,7 +22,7 @@ from resizeDataframe.location_charts import (
 )
 from resizeDataframe.download_utils import (create_download_package,create_df_download_package)
 import ast
-
+from models.task_list import Task_list
 
 #ユニークな病棟名の抽出
 def extract_unique_locations(dataframe):
@@ -170,93 +170,18 @@ def View():
             
             #読み込んだデータに基づいて、taskを抽出、存在するtaskごとにチャートを作成
             task_list = filtered_data['task'].unique() if filtered_data is not None else combined_data['task'].unique()
-            print(task_list)
-            
+            task_definitions = Task_list(filtered_data, combined_data).list()
             for task in task_list:
                 st.divider()
                 st.markdown(f"{task}")
-                count_task_chart(filtered_data,combined_data,task_name=task,show_dataframe=True,chart=True)
-            
-            st.divider()
-            st.markdown("1on1")
-            count_task_chart(filtered_data,combined_data,'1on1',chart_key="Calculate_1on1_chart",show_dataframe=False,chart=True)
-            st.divider()
-            st.markdown("NST")
-            count_task_chart(filtered_data,combined_data,'NST',chart_key="Calculate_NST_chart",show_dataframe=False,chart=True)
-            st.divider()
-            st.markdown("TDM実施")
-            count_task_chart(filtered_data,combined_data,'TDM実施',show_dataframe = True,chart_key="Calculate_TDM_chart",chart=True)
-            st.divider()
-            st.markdown("TPN評価")
-            count_task_chart(filtered_data,combined_data,'TPN評価',show_dataframe = True,chart_key="Calculate_TPN_chart",chart=False)
-            st.divider()
-            st.markdown("WG活動")
-            count_task_chart(filtered_data,combined_data,'WG活動',chart_key="Calculate_WG_chart",show_dataframe=False,chart=True)
-            st.divider()
-            st.markdown("カンファレンス")
-            count_task_chart(filtered_data,combined_data,'カンファレンス',chart_key="Calculate_conference_chart",show_dataframe=False,chart=True)
-            st.divider()
-            st.divider()
-            st.markdown("管理業務")
-            count_task_chart(filtered_data,combined_data,'管理業務',to_hours=True,chart_key="Manegment_time_chart",show_dataframe=False,chart=True)
-            st.divider()
-            st.markdown("業務調整")
-            count_task_chart(filtered_data,combined_data,'業務調整',to_hours=True,chart_key="Adjustment_work_chart",show_dataframe=False,chart=True)
-            st.divider()
-            st.markdown("持参薬を確認")
-            count_task_chart(filtered_data,combined_data,'持参薬を確認',chart_key="Check_Medication_chart",show_dataframe=False,chart=True)
-            st.divider()
-            st.markdown("服薬指導+記録作成")
-            count_task_chart(filtered_data,combined_data,'服薬指導＋指導記録作成',show_dataframe=True,chart=True)
-            st.markdown("服薬指導")
-            count_task_chart(filtered_data,combined_data,'服薬指導',show_dataframe=True,chart=True)
-            st.markdown("指導記録作成")
-            count_task_chart(filtered_data,combined_data,'指導記録作成',show_dataframe=True,chart=True)
-            st.markdown("初回・中間指導情報収集")
-            count_task_chart(filtered_data,combined_data,'初回・中間指導情報収集',show_dataframe=True,chart=True)
-            st.markdown("退院指導情報収集")
-            count_task_chart(filtered_data,combined_data,'退院指導情報収集',show_dataframe=True,chart=True)
-            st.divider()
-            st.markdown("注射台車鑑査")
-            count_task_chart(filtered_data,combined_data,'注射台車鑑査',show_dataframe=True,chart=True)
-            st.divider()
-            st.markdown("無菌調整関連業務")
-            count_task_chart(filtered_data,combined_data,'無菌調製関連業務',chart_key="Aseptic_preparation_chart",to_hours=True,show_dataframe=False,chart=True)
-            st.markdown("無菌調製(調製者)")
-            count_task_chart(filtered_data,combined_data,'無菌調製(調製者)',chart_key="Aseptic_preparation_chart_for_preparer",to_hours=True,show_dataframe=False,chart=True)
-            st.markdown("無菌調製補助業務（準備、鑑査）")
-            count_task_chart(filtered_data,combined_data,'無菌調製補助業務（準備、鑑査）',chart_key="Aseptic_preparation_chart_for_assistant",to_hours=True,show_dataframe=False,chart=True)
-            st.divider()
-            st.markdown("薬剤セット")
-            count_task_chart(filtered_data,combined_data,'薬剤セット',chart_key="Medication_set_chart",to_hours=True,show_dataframe=False,chart=True)
-            st.markdown("薬剤セット確認")
-            count_task_chart(filtered_data,combined_data,'薬剤セット確認',chart_key="Medication_set_check_chart",to_hours=True,show_dataframe=False,chart=True)
-            st.divider()
-            st.markdown("薬剤使用状況の把握等(情報収集)")
-            count_task_chart(filtered_data,combined_data,'薬剤使用状況の把握等(情報収集)',show_dataframe=True,chart=True)
-            st.divider()
-            st.markdown("薬剤サマリー作成")
-            count_task_chart(filtered_data,combined_data,'薬剤サマリー作成',show_dataframe=True,chart=True)
-            st.divider()
-            st.markdown("処方代理修正・代行入力")
-            count_task_chart(filtered_data,combined_data,'処方代理修正・代行入力',show_dataframe=True,chart=True)
-            st.divider()
-            st.markdown("問い合わせ業務")
-            count_task_chart(filtered_data,combined_data,'問い合わせ業務',show_dataframe=True,chart=True)
-            st.divider()
-            st.markdown("ICT")
-            count_task_chart(filtered_data,combined_data,'ICT',show_dataframe=True,chart=True)
-            st.markdown("AST")
-            count_task_chart(filtered_data,combined_data,'AST',show_dataframe=True,chart=True)
-            st.divider()
-            st.markdown("褥瘡")
-            count_task_chart(filtered_data,combined_data,'褥瘡',chart_key="Jokusou_chart",show_dataframe=False,chart=True)
-            
-            st.divider()
-            st.markdown("手術後使用薬剤確認")
-            count_task_chart(filtered_data,combined_data,'手術後使用薬剤確認',show_dataframe=True,chart=True)
-            st.markdown("手術室サテライト薬剤定数確認")
-            count_task_chart(filtered_data,combined_data,'手術室サテライト薬剤定数確認',chart_key="operroom_count_chart",show_dataframe=False,chart=True)
+                definition = task_definitions.get(task, {})
+                count_task_chart(filtered_data,combined_data,task_name=task,
+                                show_dataframe=definition.get("show_dataframe", False),
+                                chart_key=definition.get("chart_key", None),
+                                chart=definition.get("chart", True),
+                                to_hours=definition.get("to_hours", False),
+                                show_total=definition.get("show_total", False)
+                                )
             
             
             # 一括ダウンロードボタン
