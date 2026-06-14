@@ -3,30 +3,16 @@ from widgets.join_files import JoinFiles
 from dtgroupby.groupbytaskcount import GroupByTaskCount
 from resizeDataframe.tidy_data import tidy_data
 from resizeDataframe.drawChart import (
-    Medication_Guidance_Record_Creation,
     count_task,
     task_heatmap,
     time_count_avg,
     comment_data,
-    Calculate_1on1,
-    Calculate_NST,
-    Calculate_TDM,
-    Calculate_TPN,
-    Calculate_WG,
-    Calculate_conference,
     total_time_per_task,
-    Manegment_time,
-    Adjustment_work,
-    Check_Medication,
-    clean_preparation,
-    drag_set_check,
-    research_info_chart,
-    Jokusou_chart,
     self_task_ratio,
     collect_all_charts_data,
     collect_about_chart,
-    normal_chart,
-    operoom_chart,
+    simple_task_time_chart,
+    count_task_chart,
 )
 from resizeDataframe.location_charts import (
     collect_location_charts_data,
@@ -36,6 +22,7 @@ from resizeDataframe.location_charts import (
 )
 from resizeDataframe.download_utils import (create_download_package,create_df_download_package)
 import ast
+from models.task_list import Task_list
 
 #ユニークな病棟名の抽出
 def extract_unique_locations(dataframe):
@@ -55,13 +42,13 @@ def get_dataframe_hash(df):
 from config.release_notes import get_release_notes
 
 
-def downlad_handler(collected_data_handler,filtered_data,combined_data):
+def downlad_handler(collected_data_handler,filtered_data,combined_data,task_list=None):
     # 一括ダウンロードボタン
         st.markdown("---")
         st.subheader("データ一括ダウンロード")
         if st.button("グラフとデータフレームを収集", key="collect_data_button"):
             with st.spinner("データを収集中..."):
-                charts_and_data = collected_data_handler(filtered_data, combined_data)
+                charts_and_data = collected_data_handler(filtered_data, combined_data, task_list=task_list)
                 if charts_and_data:
                     zip_buffer = create_download_package(charts_and_data)
                     st.download_button(
@@ -130,6 +117,8 @@ def View():
             taskname_tydir=st.toggle(label="旧ツールの業務名で統一",key="taskname_tpggle",value=False)
             filtered_data=GroupByTaskCount(combined_data).group_by_task_count(
                 date_range=date_range,locate_select=locate_select,name_select=name_select,taskname_tydir=taskname_tydir)
+            #NAを含む行の除去
+            filtered_data = filtered_data.dropna(subset=['task'])
             st.subheader("各タスクの合計時間")
             total_time_per_task(filtered_data,combined_data)
             st.markdown("業務内容ごとの件数と1件あたりの時間")
@@ -158,7 +147,8 @@ def View():
             taskname_tydir=st.toggle(label="旧ツールの業務名で統一",key="taskname_tpggle",value=False)
             filtered_data=GroupByTaskCount(combined_data).group_by_task_count(
                 date_range=date_range,locate_select=locate_select,name_select=name_select,taskname_tydir=taskname_tydir )
-            
+            #NAを含む行の除去
+            filtered_data = filtered_data.dropna(subset=['task'])
             st.subheader("病棟ごとの集計")
             componentChart_location(filtered_data,combined_data)
             st.markdown("時間の合計")#locateごとに作成する
@@ -174,6 +164,9 @@ def View():
             taskname_tydir=st.toggle(label="旧ツールの業務名で統一",key="taskname_tpggle",value=False)
             filtered_data= GroupByTaskCount(combined_data).group_by_task_count(
                 date_range=date_range,locate_select=None,name_select=None,taskname_tydir=taskname_tydir )
+            #NAを含む行の除去
+            filtered_data = filtered_data.dropna(subset=['task'])
+            
             #絞り込みは日付のみ
             st.sidebar.markdown("結合結果のプレビュー")
             if filtered_data is not None:
@@ -181,91 +174,33 @@ def View():
             else:
                 st.sidebar.dataframe(combined_data.head(10))    
             
-            st.divider()
-            st.markdown("1on1")
-            Calculate_1on1(filtered_data,combined_data)
-            st.divider()
-            st.markdown("NST")
-            Calculate_NST(filtered_data,combined_data)
-            st.divider()
-            st.markdown("TDM実施")
-            Calculate_TDM(filtered_data,combined_data)
-            st.divider()
-            st.markdown("TPN評価")
-            Calculate_TPN(filtered_data,combined_data)
-            st.divider()
-            st.markdown("WG活動")
-            Calculate_WG(filtered_data,combined_data)
-            st.divider()
-            st.markdown("カンファレンス")
-            Calculate_conference(filtered_data,combined_data)
-            st.divider()
-            st.divider()
-            st.markdown("管理業務")#TODO:個人ごとの総時間グラフ
-            Manegment_time(filtered_data,combined_data)
-            st.divider()
-            st.markdown("業務調整")#個人ごとの総時間グラフ
-            Adjustment_work(filtered_data,combined_data)
-            st.divider()
-            st.markdown("持参薬を確認")#件数、総時間、１けんあたりの時間、グラフ描画必要
-            Check_Medication(filtered_data,combined_data)
-            st.divider()
-            st.markdown("服薬指導+記録作成")
-            Medication_Guidance_Record_Creation(filtered_data,combined_data)#グラフとデータフレーム
-            st.markdown("服薬指導")
-            Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name="服薬指導")#グラフとデータフレーム
-            st.markdown("指導記録作成")
-            Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name="指導記録作成")#グラフとデータフレーム
-            st.markdown("初回・中間指導情報収集")
-            Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name = "初回・中間指導情報収集")#グラフとデータフレーム,件数、1件あたりの時間
-            st.markdown("退院指導情報収集")
-            Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name = "退院指導情報収集")#グラフとデータフレーム,件数,1件あたりの時間
-            st.divider()
-            st.markdown("注射台車鑑査")
-            normal_chart(filtered_data,combined_data,task_name="注射台車鑑査")#注射台車鑑査
-            st.divider()
-            st.markdown("無菌調整関連業務")#個人ごとの時間
-            clean_preparation(filtered_data,combined_data)
-            st.markdown("無菌調製(調製者)")
-            clean_preparation(filtered_data,combined_data,task_name="無菌調製(調製者)")#個人ごとの、総時間、グラフ描画
-            st.markdown("無菌調製補助業務（準備、鑑査）")
-            clean_preparation(filtered_data,combined_data,task_name="無菌調製補助業務（準備、鑑査）")
-            st.divider()
-            st.markdown("薬剤セット")
-            drag_set_check(filtered_data,combined_data,task_name="薬剤セット")
-            st.markdown("薬剤セット確認")
-            drag_set_check(filtered_data,combined_data,task_name="薬剤セット確認")
-            st.divider()
-            st.markdown("薬剤使用状況の把握等(情報収集)")#個人ごとの件数と１けんあたりの時間を並列棒グラフ
-            research_info_chart(filtered_data,combined_data)
-            #TODO:別途データフレームで件数、総時間、１件あたりの時間
-            st.divider()
-            st.markdown("薬剤サマリー作成")
-            normal_chart(filtered_data,combined_data,task_name="薬剤サマリー作成")#グラフとデータフレーム,件数、1件あたりの時間(min)
-            st.divider()
-            st.markdown("処方代理修正・代行入力")
-            normal_chart(filtered_data,combined_data,task_name="処方代理修正・代行入力")#グラフとデータフレーム,件数、1件あたりの時間(min)
-            st.divider()
-            st.markdown("問い合わせ業務")
-            normal_chart(filtered_data,combined_data,task_name="問い合わせ業務")#グラフとデータフレーム,件数、1件あたりの時間(min)
-            st.divider()
-            st.markdown("ICT")
-            normal_chart(filtered_data,combined_data,task_name="ICT")#グラフとデータフレーム,件数、1件あたりの時間(min)
-            st.markdown("AST")
-            normal_chart(filtered_data,combined_data,task_name="AST")#グラフとデータフレーム,件数、1件あたりの時間(min)
-            st.divider()
-            st.markdown("褥瘡")#個人ごとの、総時間、グラフ描画
-            Jokusou_chart(filtered_data,combined_data)
-            
-            st.divider()
-            st.markdown("手術後使用薬剤確認")
-            normal_chart(filtered_data,combined_data,task_name="手術後使用薬剤確認")#グラフとデータフレーム,件数、1件あたりの時間(min)
-            st.markdown("手術室サテライト薬剤定数確認")
-            operoom_chart(filtered_data,combined_data)#グラフとデータフレーム,1件あたりの時間(min),件数なし
-            
+            #読み込んだデータに基づいて、taskを抽出、存在するtaskごとにチャートを作成
+            task_list = filtered_data['task'].unique() if filtered_data is not None else combined_data['task'].unique()
+            task_definitions = Task_list(filtered_data, combined_data).list()
+            for task in task_list:
+                st.divider()
+                st.markdown(f"{task}")
+                definition = task_definitions.get(task, {})
+                chart_type = definition.get("chart_func", "count_task_chart")
+                if chart_type == "simple_task_time_chart":
+                    simple_task_time_chart(filtered_data, combined_data,
+                                        task_name=task, 
+                                        to_hours=definition.get('to_hours', False), 
+                                        chart_key=definition.get('chart_key', None)
+                                        )
+                elif chart_type == "count_task_chart":
+                    count_task_chart(filtered_data,combined_data,
+                                    task_name=task,
+                                    show_dataframe=definition.get("show_dataframe", False),
+                                    chart_key=definition.get("chart_key", None),
+                                    chart=definition.get("chart", True),
+                                    to_hours=definition.get("to_hours", False),
+                                    show_total=definition.get("show_total", False)
+                                    )
+                
             
             # 一括ダウンロードボタン
-            downlad_handler(collect_all_charts_data,filtered_data,combined_data)
+            downlad_handler(collect_all_charts_data,filtered_data,combined_data,task_list=task_list)
         elif slider == "データ加工":
             st.markdown("統合データの保存・加工")
             st.text("結合されたデータフレームを加工してダウンロードできます")
@@ -280,6 +215,10 @@ def View():
             filtered_data= GroupByTaskCount(combined_data).group_by_task_count(
                 date_range=date_range,locate_select=None,name_select=None,taskname_tydir=taskname_tydir )
             
+            #NAを含む行の除去
+            check_na_drop = st.toggle(label="欠損値を含む行を削除",key="na_drop_toggle",value=False)
+            if check_na_drop:
+                filtered_data = filtered_data.dropna()
             change_name = 0
             st.write("名前を番号へ変換し、匿名化を行います")
             st.toggle(label="名前の匿名化",key="rename_toggle",value=False)
