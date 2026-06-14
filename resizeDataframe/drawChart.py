@@ -4,6 +4,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 import ast
+
+
 def _get_data(filtered_data,combined_data):
     return filtered_data if filtered_data is not None else combined_data
     
@@ -21,6 +23,7 @@ class ChartDataExtractor:
         self.df=_get_data(filtered_data,combined_data)
         
     def extract_task_data(self,task_name,to_hours = False):
+        """特定の業務に絞った、薬剤師ごとの時間を算出する関数"""
         df = self.df[['phName','task']].copy()
         df = df[df['task'] ==task_name]
         df = df.groupby('phName').size().reset_index(name='count')
@@ -28,7 +31,8 @@ class ChartDataExtractor:
         df[time_label] = _calculate_time(df['count'],to_hours)
         return df
     
-    def _create_count_chart_data(self,task_name=False,colors=False):
+    def _create_count_chart_data(self,task_name=False,colors=False,
+                                to_hours=False):
         """件数付き集計のチャートデータを作成"""
         df = self.df[['phName','task','count']].copy()
         if task_name:
@@ -38,6 +42,8 @@ class ChartDataExtractor:
             size_count = ('task','size')
         ).reset_index()
         df['time'] = df['size_count']*15
+        if to_hours:
+            df['time'] = df['time'] / 60
         df['time_per_count'] = df['time'] / df['count_sum']
         
         fig = go.Figure(
@@ -189,6 +195,76 @@ def time_count_avg(filtered_data,combined_data):
     st.dataframe(avg_df,column_config={'task':'業務内容','count_sum':'総件数','time':'総時間(min)','time_per_count':'1件あたりの時間(min)'})
 
 
+"""--汎用グラフ関数--"""
+def simple_task_time_chart(filtered_data, combined_data, task_name, to_hours=False, chart_key=None):
+    """extract_task_data + px.bar の共通処理をまとめた汎用関数"""
+    df = ChartDataExtractor(filtered_data, combined_data).extract_task_data(
+        task_name=task_name, to_hours=to_hours
+    )
+    time_col = 'time_hr' if to_hours else 'time_min'
+    time_label = '総時間(hr)' if to_hours else '総時間(min)'
+    fig = px.bar(
+        data_frame=df,
+        x='phName',
+        y=time_col,
+        labels={'phName': '薬剤師名', time_col: time_label},
+    )
+    key = chart_key if chart_key else f"simple_task_time_chart_{task_name}"
+    st.plotly_chart(fig, key=key)
+
+
+def count_task_chart(filtered_data, combined_data, task_name, chart_key=None, show_dataframe=False, show_total=False, chart=False,to_hours=False,):
+    """_create_count_chart_data + 表示処理をまとめた汎用関数
+    - task_name: 対象の業務名
+    - chart_key: Streamlitのチャートに渡すキー（省略時は自動生成）
+    - show_dataframe: データフレームを表示するか
+    - show_total: 全薬剤師の合計行を表示するか
+    - chart: チャートを表示するか
+    - to_hours: 時間を時間単位で表示するか（デフォルトは分単位）
+    
+    """
+    time_col = 'time_hr' if to_hours else 'time'
+    time_label = '総時間(hr)' if to_hours else '総時間(min)'
+    
+    fig, df = ChartDataExtractor(filtered_data, combined_data)._create_count_chart_data(
+        task_name=task_name, colors=False,to_hours=to_hours
+    )
+    key = chart_key if chart_key else f"count_task_chart_{task_name}"
+    if chart:
+        st.plotly_chart(fig, key=key)
+    if df.empty:
+        st.info("該当データが存在しません。")
+        return
+    if (df['time_per_count'] == float('inf')).any():
+        st.info("1件あたりの時間が算出できないデータがあります。件数が0の可能性があります。")
+    if show_dataframe:
+        st.dataframe(
+            df[['phName', 'count_sum', time_col, 'time_per_count']],
+            column_config={
+                'phName': '薬剤師名',
+                'count_sum': '総件数',
+                time_col: time_label,
+                'time_per_count': '1件あたりの時間(min)',
+            },
+        )
+            
+    if show_total:
+        total_df = df.agg({'count_sum': 'sum', time_col: 'sum'}).to_frame().T
+        st.markdown("全薬剤師合計")
+        st.dataframe(total_df, column_config={'count_sum': '総件数', time_col: time_label})
+    
+    if task_name=="TDM実施":
+        #薬剤師名関係なく、件数の合計
+        sumcount_df = df.agg({
+            'count_sum':'sum',
+            time_col:'sum'
+        }).to_frame().T
+        st.markdown("全薬剤師合計")
+        st.dataframe(sumcount_df,column_config={
+            'count_sum':'総件数',time_col:time_label})
+        
+
+
 def collect_about_chart(filtered_data, combined_data):
     results = []
     PLOTLY_COLORS = ['#2B66C2',"#93C7FA"]
@@ -256,163 +332,8 @@ def collect_about_chart(filtered_data, combined_data):
             
     return results
 
-    
-"""
-###
-# 業務別チャート関数群#
-# ##
-"""
-def Calculate_1on1(filtered_data,combined_data):
-    df=ChartDataExtractor(filtered_data,combined_data).extract_task_data(task_name='1on1',to_hours=False)
-    fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'})
-    st.plotly_chart(fig,key="Calculate_1on1_chart")
 
-def Calculate_NST(filtered_data,combined_data):
-    df=ChartDataExtractor(filtered_data,combined_data).extract_task_data(task_name='NST',to_hours=None)
-    fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'})
-    st.plotly_chart(fig,key="Calculate_NST_chart")
-
-def Calculate_TDM(filtered_data,combined_data):
-    fig,df = ChartDataExtractor(filtered_data,combined_data)._create_count_chart_data(
-        task_name='TDM実施',colors=False
-    )
-    st.plotly_chart(fig)
-    #size_countを除外
-    df = df[['phName','count_sum','time','time_per_count']]
-    st.dataframe(df,column_config={
-        'phName':'薬剤師名','count_sum':'総件数','time':'総時間(min)','time_per_count':'1件あたりの時間(min)'})
-    
-    #薬剤師名関係なく、件数の合計
-    sumcount_df =df.agg({
-        'count_sum':'sum',
-        'time':'sum'
-    }).to_frame().T
-    st.markdown("全薬剤師合計")
-    st.dataframe(sumcount_df,column_config={
-        'count_sum':'総件数','time':'総時間(min)'})
-        
-
-def Calculate_TPN(filtered_data,combined_data):
-    fig,df=ChartDataExtractor(filtered_data,combined_data)._create_count_chart_data(
-        task_name='TPN評価',colors=False
-    )
-    if (df['time_per_count'] == float('inf')).any():
-        st.info("1件あたりの時間が算出できないデータがあります。件数が0の可能性があります。")
-    st.dataframe(df,column_config={
-        'phName':'薬剤師名','count_sum':'総件数','size_count':'記録回数',
-        'time':'総時間(min)','time_per_count':'1件あたりの時間(min)'})
-
-def Calculate_WG(filtered_data,combined_data):
-    df=ChartDataExtractor(filtered_data,combined_data).extract_task_data(task_name='WG活動',to_hours=False)
-    fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'},)
-    st.plotly_chart(fig,key="Calculate_WG_chart")
-
-def Calculate_confa(filtered_data,combined_data):
-    df=ChartDataExtractor(filtered_data,combined_data).extract_task_data(task_name='カンファ・ラウンド',to_hours=True)
-    fig = px.bar(data_frame=df,x='phName',y='time_hr',labels={'phName':'薬剤師名','time_hr':'総時間(hr)'})
-    st.plotly_chart(fig,key="Calculate_confa_chart")
-
-def Calculate_conference(filtered_data,combined_data):
-    df=ChartDataExtractor(filtered_data,combined_data).extract_task_data(task_name='カンファレンス',to_hours=False)
-    fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'})
-    st.plotly_chart(fig,key="Calculate_conference_chart")
-
-def Manegment_time(filtered_data,combined_data):
-    df = ChartDataExtractor(filtered_data=filtered_data,
-                            combined_data=combined_data).extract_task_data(task_name='管理業務',to_hours=True)
-    fig = px.bar(data_frame=df,x='phName',y='time_hr',labels={'phName':'薬剤師名','time_hr':'時間(hr)'})
-    st.plotly_chart(fig,key="Manegment_time_chart")
-
-
-def Adjustment_work(filtered_data,combined_data):    
-    df = ChartDataExtractor(filtered_data=filtered_data,
-                            combined_data=combined_data).extract_task_data(task_name='業務調整',to_hours=True)
-    fig = px.bar(data_frame=df,x='phName',y='time_hr',labels={'phName':'薬剤師名','time_hr':'時間(hr)'})
-    st.plotly_chart(fig,key="Adjustment_work_chart")
-
-def Check_Medication(filtered_data,combined_data):
-    fig,df=ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
-        task_name='持参薬を確認',colors=False
-    )
-    st.plotly_chart(fig,key = "Check_Medication_chart")
-
-
-    
-#TODO:病棟関係ない業務を排除できるボタンを作成、グラフ表示をきりかえる
-def Medication_Guidance_Record_Creation(filtered_data,combined_data,task_name=None):
-    if task_name is None:
-        task_name = '服薬指導＋指導記録作成'
-    fig,df=ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
-        task_name=task_name,colors=False
-    )
-    st.plotly_chart(fig,key=f"Medication_Guidance_Record_Creation_chart_{task_name}")
-    if df.empty:
-        st.info("該当データが存在しません。")
-        return
-    
-    if (df['time_per_count'] == float('inf')).any():
-        st.info("1件あたりの時間が算出できないデータがあります。件数が0の可能性があります。")
-    st.dataframe(df[['phName','count_sum','time_per_count']],column_config={'phName':'薬剤師名','count_sum':'総件数','time_per_count':'1件あたりの時間(min)'})
-
-
-def normal_chart(filtered_data,combined_data,task_name=None):#台車鑑査,件数 、1件あたりの時間、グラフ描画
-    fig,df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
-        task_name='注射台車鑑査',colors=False
-    )
-    st.plotly_chart(fig,key=f"fTrolley_check_chart_{task_name}")
-    if df.empty:
-        st.info("該当データが存在しません。")
-        return
-
-    if (df['time_per_count'] == float('inf')).any():
-        st.info("1件あたりの時間が算出できないデータがあります。件数が0の可能性があります。")
-    st.dataframe(df[['phName','count_sum','time_per_count']],column_config={'phName':'薬剤師名','count_sum':'総件数','time_per_count':'1件あたりの時間(min)'})
-
-import plotly.express as px
-import pandas as pd
-
-def clean_preparation(filtered_data,combined_data,task_name=None):
-    if task_name is None:
-        task_name = '無菌調製関連業務'
-    df = ChartDataExtractor(filtered_data,combined_data).extract_task_data(
-        task_name=task_name,to_hours=False)
-    fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'})
-    st.plotly_chart(fig,key=f"clean_preparation_chart_{task_name}")
-
-def drag_set_check(filtered_data,combined_data,task_name=None):
-    if task_name is None:
-        task_name = '薬剤セット・確認'
-    df =ChartDataExtractor(filtered_data=filtered_data,
-                        combined_data=combined_data).extract_task_data(task_name=task_name,to_hours=False)
-    fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'})
-    st.plotly_chart(fig,key=f"drag_set_check_chart_{task_name}")
-
-import plotly.graph_objects as go
-
-def research_info_chart(filtered_data,combined_data):
-    fig,df =ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data)._create_count_chart_data(
-        task_name='薬剤使用状況の把握等（情報収集）',colors=False
-    )
-    st.plotly_chart(fig,key="research_info_chart")
-    if (df['time_per_count'] == float('inf')).any():
-        st.info("1件あたりの時間が算出できないデータがあります。件数が0の可能性があります。")
-    st.dataframe(df,column_config={
-        'phName':'薬剤師名','count_sum':'総件数','size_count':'記録回数','time_per_count':'1件あたりの時間(min)',
-        'time':'総時間(min)'
-        })
-
-def Jokusou_chart(filtered_data,combined_data):
-    df = ChartDataExtractor(filtered_data,combined_data).extract_task_data(task_name='褥瘡',to_hours=False)
-    fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'})
-    st.plotly_chart(fig,key="Jokusou_chart")
-        
-def operoom_chart(filtered_data,combined_data):
-    df = ChartDataExtractor(filtered_data=filtered_data,combined_data=combined_data).extract_task_data(task_name='手術室サテライト薬剤定数確認',to_hours=False)
-    fig = px.bar(data_frame=df,x='phName',y='time_min',labels={'phName':'薬剤師名','time_min':'総時間(min)'})
-    st.plotly_chart(fig,key="operroom_count_chart")
-
-
-def collect_all_charts_data(filtered_data, combined_data):
+def collect_all_charts_data(filtered_data, combined_data,task_list=None):
     """
     全てのグラフとデータフレームを収集する関数
     
