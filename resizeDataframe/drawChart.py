@@ -369,6 +369,8 @@ def collect_all_charts_data(filtered_data, combined_data,task_list=None):
                 lambda t=task: ChartDataExtractor(filtered_data, combined_data)._create_count_chart_data(
                     task_name=t, colors=PLOTLY_COLORS, to_hours=definition.get('to_hours', False)
                 )))
+        else:
+            print(f"Warning: タスク '{task}' はTask_listに定義がないため、収集をスキップしました")
     print("追加したタスクの関数:",data_functions)    
 
     for name, func in data_functions:

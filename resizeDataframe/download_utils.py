@@ -5,6 +5,15 @@ from io import StringIO
 import pandas as pd
 import plotly.graph_objects as go
 import platform
+import re
+
+def _safe_name(name):
+    """
+    Excelのシート名やZIP内のファイル名に使えない文字を除去する
+    シート名で禁止される文字: \\ / ? * [ ] :
+    """
+    return re.sub(r'[\\/?*\[\]:]', '_', str(name))
+
 def get_japanese_font():
     """
     OSに応じて日本語フォントを返す
@@ -107,7 +116,7 @@ def create_download_package(charts_and_data):
                                     family = japanese_font),
                     )
                     img_bytes = fig_copy.to_image(format='png', width=1920, height=1080,scale=2,engine='kaleido')
-                    zip_file.writestr(f'charts/{name}_chart.png', img_bytes)
+                    zip_file.writestr(f'charts/{_safe_name(name)}_chart.png', img_bytes)
                 except Exception as e:
                     print(f"Error saving chart {name}: {e}")
                     import traceback
@@ -118,11 +127,12 @@ def create_download_package(charts_and_data):
                 try:
                     excel_buffer = BytesIO()
                     with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-                        df.to_excel(writer, index=False, sheet_name=name[:31])  # Excelのシート名は31文字まで
+                        safe_name = _safe_name(name)
+                        df.to_excel(writer, index=False, sheet_name=safe_name[:31])  # Excelのシート名は31文字まで
                         if total_df is not None and not total_df.empty:
-                            total_df.to_excel(writer, index=False, sheet_name=f"{name[:27]}_総件数・総時間")
+                            total_df.to_excel(writer, index=False, sheet_name=f"{safe_name[:27]}_総件数・総時間")
                     excel_buffer.seek(0)
-                    zip_file.writestr(f'data/{name}_data.xlsx', excel_buffer.getvalue())
+                    zip_file.writestr(f'data/{_safe_name(name)}_data.xlsx', excel_buffer.getvalue())
                 except Exception as e:
                     print(f"Error saving dataframe {name}: {e}")
     zip_buffer.seek(0)
@@ -149,7 +159,7 @@ def create_combined_excel(charts_and_data):
             if df is not None and not df.empty:
                 try:
                     # Excelのシート名は31文字まで、特殊文字を除去
-                    safe_name = name[:31].replace('/', '_').replace('\\', '_')
+                    safe_name = _safe_name(name)[:31]
                     df.to_excel(writer, index=False, sheet_name=safe_name)
                 except Exception as e:
                     print(f"Error adding sheet {name}: {e}")
