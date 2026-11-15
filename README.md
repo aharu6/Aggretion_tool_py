@@ -30,10 +30,12 @@
 Python 3.12 以上が必要です。
 
 ```bash
-pip install -r requirements.txt
-# または uv を使用
 uv sync
+# または pip を使用
+pip install -r requirements.txt
 ```
+
+依存関係は `pyproject.toml` / `uv.lock` が正本です。`requirements.txt` は uv.lock から自動生成しているので、手で編集しないでください（再生成: `uv export --format requirements-txt --no-hashes --output-file requirements.txt`）。
 
 グラフ画像の保存(kaleido)と日本語表示のため、`packages.txt` の日本語フォントと Chromium が必要です。
 
