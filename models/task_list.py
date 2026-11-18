@@ -202,6 +202,13 @@ class Task_list:
                     "chart":True,
                     "chart_key":"Inquiry_response_chart",
                 },
+                "医師からの相談":{
+                    "chart_func":"count_task_chart",
+                    "task_name":"医師からの相談",
+                    "show_dataframe":True,
+                    "chart":True,
+                    "chart_key":"Doctor_consultation_chart",
+                },
                 "看護師からの相談":{
                     "chart_func":"count_task_chart",
                     "task_name":"看護師からの相談",
