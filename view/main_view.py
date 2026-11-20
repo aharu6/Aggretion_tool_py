@@ -96,9 +96,14 @@ def View():
     if combined_data is not None:
         #ハッシュ値で変更を検知、変更ある場合のみ。select_locate_listを更新
         current_hash = get_dataframe_hash(combined_data)
-        if 'combined_data_hash' not in st.session_state:
+        if st.session_state.get('combined_data_hash') != current_hash:
             st.session_state.select_locate_list = extract_unique_locations(combined_data)
             st.session_state.combined_data_hash = current_hash
+            #データが変わったら、新しいデータに存在しない病棟・個人名の選択をクリアする
+            if 'locate_select' in st.session_state:
+                del st.session_state['locate_select']
+            if 'name_select' in st.session_state:
+                del st.session_state['name_select']
 
         select_locate_list = st.session_state.select_locate_list
 
