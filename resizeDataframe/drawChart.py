@@ -135,10 +135,20 @@ def task_heatmap(filtered_data,combined_data):
 
 """--その他コメント--"""
 def create_comment_data(filtered_data,combined_data):
+    """
+    コメント一覧用のデータを作成する。
+
+    locate が空欄（NaN/None/空文字）の行に ast.literal_eval を適用すると
+    ValueError になり概要ページ全体が落ちるため（#70）、空欄は解釈せず
+    'Unknown' に置き換える。コメント行そのものは表示対象なので、
+    他の集計関数のように行ごと除外はしない。
+    """
     df = _get_data(filtered_data, combined_data)
     df = df[['phName','comment','time','locate','date']]
     df = df[df['comment'].notnull() & (df['comment'] !='')]
-    df['locate'] = df['locate'].apply(ast.literal_eval)
+    df['locate'] = df['locate'].apply(
+        lambda x: ast.literal_eval(x) if pd.notnull(x) and str(x).strip() != '' else []
+    )
     df['locate'] = df['locate'].apply(lambda x: x[0] if len(x)>0 else 'Unknown')
     return df
 
